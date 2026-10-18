@@ -1,0 +1,194 @@
+- generic [active] [ref=e1]:
+  - main [ref=e3]:
+    - generic [ref=e4]:
+      - generic [ref=e5]:
+        - img [ref=e7]
+        - text: 헌법의 법정
+      - generic [ref=e9]:
+        - generic: 학생
+        - img "성장하는 부엉이 토론 아바타" [ref=e11]
+    - generic [ref=e20]:
+      - generic [ref=e21]:
+        - generic [ref=e22]: A CONSTITUTIONAL DEBATE
+        - heading "생각을 세우고, 근거로 말하기" [level=1] [ref=e23]
+        - paragraph [ref=e24]: 정답을 찾기보다, 서로 다른 권리를 살펴보며 내 논리를 만들어 보세요.
+      - generic [ref=e25]: 오늘의 사건 · 학교 휴대전화 수거
+    - tablist "토론 단계" [ref=e26]:
+      - tab "01 토론 시작 전 쟁점과 입장 정하기" [ref=e27] [cursor=pointer]:
+        - generic [ref=e28]: "01"
+        - generic [ref=e29]:
+          - text: 토론 시작 전
+          - text: 쟁점과 입장 정하기
+      - tab "02 토론 진행 중 근거와 반론 다듬기" [ref=e30] [cursor=pointer]:
+        - generic [ref=e31]: "02"
+        - generic [ref=e32]:
+          - text: 토론 진행 중
+          - text: 근거와 반론 다듬기
+      - tab "03 토론 마무리 핵심 주장 정리하기" [ref=e33] [cursor=pointer]:
+        - generic [ref=e34]: "03"
+        - generic [ref=e35]:
+          - text: 토론 마무리
+          - text: 핵심 주장 정리하기
+    - generic [ref=e36]:
+      - region "토론 코치" [ref=e37]:
+        - generic [ref=e38]:
+          - generic [ref=e39]:
+            - heading "나의 토론 코치" [level=2] [ref=e40]
+            - paragraph [ref=e41]: 내 입장을 고르고 첫 주장을 함께 준비해요.
+          - generic [ref=e42]: 법령 검색 준비 · AI 키 대기
+        - generic [ref=e45]:
+          - img [ref=e47]
+          - generic [ref=e49]:
+            - generic [ref=e50]: 잠시 생각이 멈췄나요? 한 문장이 어렵다면 “저는 ___ 쪽에 조금 더 가까워요. 왜냐하면 ___ 때문이에요”처럼 빈칸부터 채워보세요.
+            - generic [ref=e51]: 공식 근거 확인
+        - generic [ref=e52]:
+          - button "찬성 입장을 정리하고 싶어요" [ref=e53] [cursor=pointer]
+          - button "반대 입장을 정리하고 싶어요" [ref=e54] [cursor=pointer]
+          - button "양쪽 주장을 비교해줘요" [ref=e55] [cursor=pointer]
+        - generic [ref=e56]:
+          - generic [ref=e57]:
+            - textbox "토론 코치에게 보낼 내용" [ref=e58]:
+              - /placeholder: 내 생각이나 궁금한 점을 적어보세요
+            - button "보내기" [ref=e59] [cursor=pointer]:
+              - img [ref=e60]
+          - generic [ref=e62]: 입력은 피드백 생성과 공식 자료 조회에 전달됩니다. 이름·연락처 같은 개인정보는 쓰지 마세요.
+      - generic [ref=e63]:
+        - generic [ref=e64]:
+          - generic [ref=e65]:
+            - heading "나의 발표 기록" [level=2] [ref=e66]
+            - generic [ref=e67]: 0 / 3 발표
+          - paragraph [ref=e68]: 발표 기준을 채우고, 내 토론 아바타도 성장시켜 보세요.
+          - generic [ref=e69]:
+            - generic [ref=e70]:
+              - img "성장하는 부엉이 토론 아바타" [ref=e72]
+              - generic [ref=e81]: LV 0
+            - generic [ref=e82]:
+              - text: 내 토론 아바타
+              - strong [ref=e83]: 토론 아바타
+              - generic [ref=e84]: 시작 단계
+              - generic [ref=e85]: 첫 발표를 기다리고 있어요.
+              - generic [ref=e86]:
+                - generic [ref=e87]:
+                  - text: 내 별명
+                  - textbox "학생 별명" [ref=e88]: 학생
+                - generic [ref=e89]:
+                  - text: 캐릭터
+                  - combobox "캐릭터 종류" [ref=e90]:
+                    - option "부엉이" [selected]
+                    - option "여우"
+                    - option "거북이"
+                    - option "고래"
+            - generic [ref=e91]:
+              - generic [ref=e92]: 발표 0회 · 참여 0회
+              - strong [ref=e93]: 발표할 때마다 쑥쑥 성장!
+          - generic [ref=e95]:
+            - generic [ref=e96]: 만점 기준 발표 진행도
+            - generic [ref=e97]: 0%
+          - generic [ref=e98]:
+            - generic [ref=e99]:
+              - button "1번째 발표 미완료, 눌러 발표 기록" [ref=e100] [cursor=pointer]
+              - generic [ref=e101]: 첫 발표 · 입장과 주장
+              - generic [ref=e102]: 기록 전
+            - generic [ref=e103]:
+              - button "2번째 발표 미완료, 눌러 발표 기록" [ref=e104] [cursor=pointer]
+              - generic [ref=e105]: 두 번째 · 근거와 반론
+              - generic [ref=e106]: 기록 전
+            - generic [ref=e107]:
+              - button "3번째 발표 미완료, 눌러 발표 기록" [ref=e108] [cursor=pointer]
+              - generic [ref=e109]: 세 번째 · 최종 정리
+              - generic [ref=e110]: 기록 전
+          - button "+ 발표 기록하기" [ref=e111] [cursor=pointer]
+          - generic [ref=e112]:
+            - generic [ref=e113]: 만점 준비 기준
+            - generic [ref=e114]:
+              - generic [ref=e115]: 발표 3회
+              - generic [ref=e116]: 창의적 생각
+              - generic [ref=e117]: 논리적 근거
+        - generic [ref=e118]:
+          - heading "생각이 막힐 때" [level=2] [ref=e119]
+          - generic [ref=e120]:
+            - button "첫 문장 도와줘 부담 없이 말문을 열어봐요" [ref=e121] [cursor=pointer]:
+              - img [ref=e123]
+              - generic [ref=e126]:
+                - generic [ref=e127]: 첫 문장 도와줘
+                - text: 부담 없이 말문을 열어봐요
+            - button "내 생각 정리하기 주장·이유·예시로 구조화해요" [ref=e128] [cursor=pointer]:
+              - img [ref=e130]
+              - generic [ref=e133]:
+                - generic [ref=e134]: 내 생각 정리하기
+                - text: 주장·이유·예시로 구조화해요
+            - button "반대쪽 질문 연습 내 논리를 더 단단하게 만들어요" [ref=e135] [cursor=pointer]:
+              - img [ref=e137]
+              - generic [ref=e139]:
+                - generic [ref=e140]: 반대쪽 질문 연습
+                - text: 내 논리를 더 단단하게 만들어요
+          - paragraph [ref=e141]: 헌법 조항 안내는 수업 토론을 위한 학습 자료입니다. 실제 사건의 법률 판단이나 법률 자문을 대신하지 않습니다.
+    - region "학급 성장 현황" [ref=e142]:
+      - generic [ref=e143]:
+        - generic [ref=e144]:
+          - heading "우리 반 토론 레이스" [level=2] [ref=e145]
+          - paragraph [ref=e146]: 친구들의 아바타가 발표와 참여를 타고 완주선을 향해 달려요.
+        - generic [ref=e147]:
+          - button "교사 지원 보기" [ref=e148] [cursor=pointer]
+          - generic [ref=e149]: 실시간 집계 중
+      - generic [ref=e150]:
+        - generic [ref=e151]:
+          - generic [ref=e152]: 참여 학생
+          - strong [ref=e153]: "1"
+        - generic [ref=e154]:
+          - generic [ref=e155]: 전체 발표
+          - strong [ref=e156]: "0"
+        - generic [ref=e157]:
+          - generic [ref=e158]: 토론 참여
+          - strong [ref=e159]: "0"
+      - article [ref=e161]:
+        - img "성장하는 부엉이 토론 아바타" [ref=e163]
+        - generic [ref=e172]:
+          - generic [ref=e173]:
+            - generic [ref=e174]: 학생
+            - generic [ref=e175]: "LV 0 · #1"
+          - generic [ref=e176]: 토론 아바타 · 시작 단계
+          - generic [ref=e177]: 발표 0회 · 참여 0회
+          - generic [ref=e178]:
+            - img "성장하는 부엉이 토론 아바타" [ref=e180]
+            - generic [ref=e189]: FINISH
+          - generic [ref=e190]: 출발선을 기다리고 있어요. 첫 생각부터 시작해요.
+          - generic [ref=e191]:
+            - button "AI 코치에게 다음 한 걸음 묻기" [ref=e192] [cursor=pointer]
+            - button "교사 도움 요청" [ref=e193] [cursor=pointer]
+      - generic [ref=e194]: 완주 목표는 발표 3회와 코치 질문·토론 발언 3회예요. 같은 별명은 한 아바타로 합산됩니다. 집계는 서버 재시작 시 초기화돼요.
+    - region "학급 공개 토론" [ref=e195]:
+      - generic [ref=e196]:
+        - generic [ref=e197]:
+          - heading "우리 반 공개 토론" [level=2] [ref=e198]
+          - paragraph [ref=e199]: 같은 토론실 학생들의 주장을 읽고, 답글로 생각을 주고받아요.
+        - generic [ref=e200]: 실시간 토론
+      - generic [ref=e203]: 아직 발언이 없어요. 찬성·반대·배심원으로 첫 의견을 남겨보세요.
+      - generic [ref=e204]:
+        - generic [ref=e205]:
+          - combobox "토론 역할" [ref=e206]:
+            - option "찬성팀" [selected]
+            - option "반대팀"
+            - option "배심원"
+          - textbox "익명 이름" [ref=e207]: 학생
+          - textbox "학급 토론 발언" [ref=e208]:
+            - /placeholder: 주장, 근거, 질문을 남겨보세요
+          - button "발언 등록" [ref=e209] [cursor=pointer]
+        - generic [ref=e210]: 실명 대신 별명을 사용하세요. 발언은 같은 수업 페이지 접속자에게 공개되며, 서버가 꺼지면 삭제됩니다.
+    - region "헌법 조항 퀴즈 게임" [ref=e211]:
+      - generic [ref=e212]:
+        - generic [ref=e213]:
+          - generic [ref=e214]: CONSTITUTION MINI GAME
+          - heading "마지막 한 판, 조항 탐험!" [level=2] [ref=e215]
+          - paragraph [ref=e216]: 생활 속 장면을 읽고, 어울리는 헌법 조항을 골라보세요.
+        - generic [ref=e217]:
+          - generic [ref=e218]: 점수 0
+          - generic [ref=e219]: 연속 0 · 최고 0
+      - generic [ref=e220]:
+        - generic [ref=e221]:
+          - generic [ref=e222]:
+            - strong [ref=e223]: 헌법 조항 탐험대
+            - paragraph [ref=e224]: 다섯 가지 상황을 풀며 기본권을 찾아요. 틀려도 괜찮아요. 힌트와 조항 해설이 기다리고 있어요.
+          - button "게임 시작" [ref=e225] [cursor=pointer]
+        - paragraph [ref=e226]: 정답을 고르면 관련 조항을 짧게 설명해드려요. 완료하면 학급 레이스 참여에도 기록돼요.
+  - status

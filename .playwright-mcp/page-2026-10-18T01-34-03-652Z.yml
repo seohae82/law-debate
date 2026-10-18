@@ -1,0 +1,159 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - complementary [ref=e3]:
+      - generic [ref=e4]:
+        - img [ref=e6]
+        - generic [ref=e8]:
+          - generic [ref=e9]: 헌법의 법정
+          - generic [ref=e10]: CLASSROOM DEBATE
+      - generic [ref=e11]: 오늘의 수업
+      - navigation [ref=e12]:
+        - button "토론 도우미" [ref=e13] [cursor=pointer]:
+          - img [ref=e14]
+          - text: 토론 도우미
+        - button "내 생각 노트" [ref=e17] [cursor=pointer]:
+          - img [ref=e18]
+          - text: 내 생각 노트
+        - button "헌법 조항 카드" [ref=e20] [cursor=pointer]:
+          - img [ref=e21]
+          - text: 헌법 조항 카드
+      - generic [ref=e24]:
+        - generic [ref=e25]: TODAY'S CASE · 01
+        - heading "학교의 휴대전화 일괄 수거는 정당한가?" [level=3] [ref=e26]
+        - paragraph [ref=e27]: 학생의 기본권과 학교의 교육·생활지도 책임이 만나는 지점을 살펴봅니다.
+    - main [ref=e28]:
+      - generic [ref=e29]:
+        - generic [ref=e30]:
+          - text: 모의법정 수업 /
+          - strong [ref=e31]: 1조 · 토론실
+        - generic [ref=e32]:
+          - generic [ref=e33]: 참여 학생
+          - generic [ref=e34]: 학
+      - generic [ref=e35]:
+        - generic [ref=e36]:
+          - generic [ref=e37]: A CONSTITUTIONAL DEBATE
+          - heading "생각을 세우고, 근거로 말하기" [level=1] [ref=e38]
+          - paragraph [ref=e39]: 정답을 찾기보다, 서로 다른 권리를 살펴보며 내 논리를 만들어 보세요.
+        - generic [ref=e40]: 오늘의 사건 · 학교 휴대전화 수거
+      - tablist "토론 단계" [ref=e41]:
+        - tab "01 토론 시작 전 쟁점과 입장 정하기" [ref=e42] [cursor=pointer]:
+          - generic [ref=e43]: "01"
+          - generic [ref=e44]:
+            - text: 토론 시작 전
+            - text: 쟁점과 입장 정하기
+        - tab "02 토론 진행 중 근거와 반론 다듬기" [ref=e45] [cursor=pointer]:
+          - generic [ref=e46]: "02"
+          - generic [ref=e47]:
+            - text: 토론 진행 중
+            - text: 근거와 반론 다듬기
+        - tab "03 토론 마무리 핵심 주장 정리하기" [ref=e48] [cursor=pointer]:
+          - generic [ref=e49]: "03"
+          - generic [ref=e50]:
+            - text: 토론 마무리
+            - text: 핵심 주장 정리하기
+      - generic [ref=e51]:
+        - region "토론 코치" [ref=e52]:
+          - generic [ref=e53]:
+            - generic [ref=e54]:
+              - heading "나의 토론 코치" [level=2] [ref=e55]
+              - paragraph [ref=e56]: 내 입장을 고르고 첫 주장을 함께 준비해요.
+            - generic [ref=e57]: 법령 검색 준비 · AI 키 대기
+          - generic [ref=e59]:
+            - generic [ref=e60]:
+              - img [ref=e62]
+              - generic [ref=e64]:
+                - generic [ref=e65]: 오늘의 사건은 “학교의 휴대전화 일괄 수거는 정당한가?”예요. 먼저 찬성인지 반대인지 정하고, 왜 그렇게 생각하는지 한 문장으로 말해볼까요? 아직 잘 모르겠다면 양쪽의 이유를 같이 살펴봐요.
+                - generic [ref=e66]: 공식 근거 확인
+            - generic [ref=e67]:
+              - img [ref=e69]
+              - generic [ref=e71]:
+                - generic [ref=e72]: 천천히 생각하셔도 괜찮아요. 한 문장이 어렵다면 “저는 ___ 쪽에 조금 더 가까워요. 왜냐하면 ___ 때문이에요”처럼 빈칸부터 채워보세요.
+                - generic [ref=e73]: 공식 근거 확인
+            - generic [ref=e75]:
+              - generic [ref=e76]: 학교에서 학생 휴대전화를 수업 시간에 모두 보관해야 할까요? 사생활 보호와 수업 집중이 충돌합니다.
+              - generic [ref=e77]: 내 발언
+            - generic [ref=e78]:
+              - img [ref=e80]
+              - generic [ref=e82]:
+                - generic [ref=e83]: 공식 법령 자료를 찾아봤어요. 생성형 AI 연결은 Gemini API 키 등록 후 활성화됩니다. 아래 출처를 살펴보고, 어떤 권리와 공익이 부딪히는지 먼저 표시해 보세요.
+                - generic [ref=e84]: 법령 검색 · 생성형 AI 대기
+            - generic [ref=e85]:
+              - img [ref=e87]
+              - generic [ref=e89]:
+                - generic [ref=e90]: 잠시 생각이 멈췄나요? 한 문장이 어렵다면 “저는 ___ 쪽에 조금 더 가까워요. 왜냐하면 ___ 때문이에요”처럼 빈칸부터 채워보세요.
+                - generic [ref=e91]: 공식 근거 확인
+          - generic [ref=e92]:
+            - button "찬성 입장을 정리하고 싶어요" [ref=e93] [cursor=pointer]
+            - button "반대 입장을 정리하고 싶어요" [ref=e94] [cursor=pointer]
+            - button "양쪽 주장을 비교해줘요" [ref=e95] [cursor=pointer]
+          - generic [ref=e96]:
+            - generic [ref=e97]:
+              - textbox "토론 코치에게 보낼 내용" [ref=e98]:
+                - /placeholder: 내 생각이나 궁금한 점을 적어보세요
+              - button "보내기" [ref=e99] [cursor=pointer]:
+                - img [ref=e100]
+            - generic [ref=e102]: 입력은 피드백 생성과 공식 자료 조회에 전달됩니다. 이름·연락처 같은 개인정보는 쓰지 마세요.
+        - generic [ref=e103]:
+          - generic [ref=e104]:
+            - generic [ref=e105]:
+              - heading "나의 발표 기록" [level=2] [ref=e106]
+              - generic [ref=e107]: 0 / 3 발표
+            - paragraph [ref=e108]: 3번 발표하고, 만점 기준을 하나씩 채워 보세요.
+            - generic [ref=e110]:
+              - generic [ref=e111]: 발표 진행도
+              - generic [ref=e112]: 0%
+            - generic [ref=e113]:
+              - generic [ref=e114]:
+                - generic [ref=e116]: 첫 발표 · 입장과 주장
+                - generic [ref=e117]: 기록 전
+              - generic [ref=e118]:
+                - generic [ref=e120]: 두 번째 · 근거와 반론
+                - generic [ref=e121]: 기록 전
+              - generic [ref=e122]:
+                - generic [ref=e124]: 세 번째 · 최종 정리
+                - generic [ref=e125]: 기록 전
+            - button "+ 발표 완료 기록하기" [ref=e126] [cursor=pointer]
+            - generic [ref=e127]:
+              - generic [ref=e128]: 만점 준비 기준
+              - generic [ref=e129]:
+                - generic [ref=e130]: 발표 3회
+                - generic [ref=e131]: 창의적 생각
+                - generic [ref=e132]: 논리적 근거
+          - generic [ref=e133]:
+            - heading "생각이 막힐 때" [level=2] [ref=e134]
+            - generic [ref=e135]:
+              - button "첫 문장 도와줘 부담 없이 말문을 열어봐요" [ref=e136] [cursor=pointer]:
+                - img [ref=e138]
+                - generic [ref=e141]:
+                  - generic [ref=e142]: 첫 문장 도와줘
+                  - text: 부담 없이 말문을 열어봐요
+              - button "내 생각 정리하기 주장·이유·예시로 구조화해요" [ref=e143] [cursor=pointer]:
+                - img [ref=e145]
+                - generic [ref=e148]:
+                  - generic [ref=e149]: 내 생각 정리하기
+                  - text: 주장·이유·예시로 구조화해요
+              - button "반대쪽 질문 연습 내 논리를 더 단단하게 만들어요" [ref=e150] [cursor=pointer]:
+                - img [ref=e152]
+                - generic [ref=e154]:
+                  - generic [ref=e155]: 반대쪽 질문 연습
+                  - text: 내 논리를 더 단단하게 만들어요
+            - paragraph [ref=e156]: 헌법 조항 안내는 수업 토론을 위한 학습 자료입니다. 실제 사건의 법률 판단이나 법률 자문을 대신하지 않습니다.
+      - region "학급 공개 토론" [ref=e157]:
+        - generic [ref=e158]:
+          - generic [ref=e159]:
+            - heading "우리 반 공개 토론" [level=2] [ref=e160]
+            - paragraph [ref=e161]: 같은 토론실 학생들의 주장을 읽고, 답글로 생각을 주고받아요.
+          - generic [ref=e162]: 실시간 토론
+        - generic [ref=e165]: 아직 발언이 없어요. 찬성·반대·배심원으로 첫 의견을 남겨보세요.
+        - generic [ref=e166]:
+          - generic [ref=e167]:
+            - combobox "토론 역할" [ref=e168]:
+              - option "찬성팀" [selected]
+              - option "반대팀"
+              - option "배심원"
+            - textbox "익명 이름" [ref=e169]: 학생
+            - textbox "학급 토론 발언" [ref=e170]:
+              - /placeholder: 주장, 근거, 질문을 남겨보세요
+            - button "발언 등록" [ref=e171] [cursor=pointer]
+          - generic [ref=e172]: 실명 대신 별명을 사용하세요. 발언은 같은 수업 페이지 접속자에게 공개되며, 서버가 꺼지면 삭제됩니다.
+  - status

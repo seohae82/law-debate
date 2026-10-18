@@ -1,0 +1,190 @@
+- generic [active] [ref=e1]:
+  - main [ref=e3]:
+    - generic [ref=e4]:
+      - generic [ref=e5]:
+        - img [ref=e7]
+        - text: 헌법의 법정
+      - generic [ref=e9]:
+        - generic: 학생
+        - img "성장하는 부엉이 토론 캐릭터" [ref=e11]
+    - generic [ref=e20]:
+      - generic [ref=e21]:
+        - generic [ref=e22]: A CONSTITUTIONAL DEBATE
+        - heading "생각을 세우고, 근거로 말하기" [level=1] [ref=e23]
+        - paragraph [ref=e24]: 정답을 찾기보다, 서로 다른 권리를 살펴보며 내 논리를 만들어 보세요.
+      - generic [ref=e25]: 오늘의 사건 · 학교 휴대전화 수거
+    - tablist "토론 단계" [ref=e26]:
+      - tab "01 토론 시작 전 쟁점과 입장 정하기" [ref=e27] [cursor=pointer]:
+        - generic [ref=e28]: "01"
+        - generic [ref=e29]:
+          - text: 토론 시작 전
+          - text: 쟁점과 입장 정하기
+      - tab "02 토론 진행 중 근거와 반론 다듬기" [ref=e30] [cursor=pointer]:
+        - generic [ref=e31]: "02"
+        - generic [ref=e32]:
+          - text: 토론 진행 중
+          - text: 근거와 반론 다듬기
+      - tab "03 토론 마무리 핵심 주장 정리하기" [ref=e33] [cursor=pointer]:
+        - generic [ref=e34]: "03"
+        - generic [ref=e35]:
+          - text: 토론 마무리
+          - text: 핵심 주장 정리하기
+    - generic [ref=e36]:
+      - region "토론 코치" [ref=e37]:
+        - generic [ref=e38]:
+          - generic [ref=e39]:
+            - heading "나의 토론 코치" [level=2] [ref=e40]
+            - paragraph [ref=e41]: 내 입장을 고르고 첫 주장을 함께 준비해요.
+          - generic [ref=e42]: 법령 검색 준비 · AI 키 대기
+        - generic [ref=e44]:
+          - generic [ref=e45]:
+            - img [ref=e47]
+            - generic [ref=e49]:
+              - generic [ref=e50]: 잠시 생각이 멈췄나요? 한 문장이 어렵다면 “저는 ___ 쪽에 조금 더 가까워요. 왜냐하면 ___ 때문이에요”처럼 빈칸부터 채워보세요.
+              - generic [ref=e51]: 공식 근거 확인
+          - generic [ref=e52]:
+            - img [ref=e54]
+            - generic [ref=e56]:
+              - generic [ref=e57]: 잠시 생각이 멈췄나요? 한 문장이 어렵다면 “저는 ___ 쪽에 조금 더 가까워요. 왜냐하면 ___ 때문이에요”처럼 빈칸부터 채워보세요.
+              - generic [ref=e58]: 공식 근거 확인
+          - generic [ref=e59]:
+            - img [ref=e61]
+            - generic [ref=e63]:
+              - generic [ref=e64]: 잠시 생각이 멈췄나요? 한 문장이 어렵다면 “저는 ___ 쪽에 조금 더 가까워요. 왜냐하면 ___ 때문이에요”처럼 빈칸부터 채워보세요.
+              - generic [ref=e65]: 공식 근거 확인
+          - generic [ref=e66]:
+            - img [ref=e68]
+            - generic [ref=e70]:
+              - generic [ref=e71]: 잠시 생각이 멈췄나요? 한 문장이 어렵다면 “저는 ___ 쪽에 조금 더 가까워요. 왜냐하면 ___ 때문이에요”처럼 빈칸부터 채워보세요.
+              - generic [ref=e72]: 공식 근거 확인
+        - generic [ref=e73]:
+          - button "찬성 입장을 정리하고 싶어요" [ref=e74] [cursor=pointer]
+          - button "반대 입장을 정리하고 싶어요" [ref=e75] [cursor=pointer]
+          - button "양쪽 주장을 비교해줘요" [ref=e76] [cursor=pointer]
+        - generic [ref=e77]:
+          - generic [ref=e78]:
+            - textbox "토론 코치에게 보낼 내용" [ref=e79]:
+              - /placeholder: 내 생각이나 궁금한 점을 적어보세요
+            - button "보내기" [ref=e80] [cursor=pointer]:
+              - img [ref=e81]
+          - generic [ref=e83]: 입력은 피드백 생성과 공식 자료 조회에 전달됩니다. 이름·연락처 같은 개인정보는 쓰지 마세요.
+      - generic [ref=e84]:
+        - generic [ref=e85]:
+          - generic [ref=e86]:
+            - heading "나의 발표 기록" [level=2] [ref=e87]
+            - generic [ref=e88]: 0 / 3 발표
+          - paragraph [ref=e89]: 발표 기준을 채우고, 내 토론 아바타도 성장시켜 보세요.
+          - generic [ref=e90]:
+            - generic [ref=e91]:
+              - img "성장하는 부엉이 토론 캐릭터" [ref=e93]
+              - generic [ref=e102]: LV 0
+            - generic [ref=e103]:
+              - text: 내 토론 아바타
+              - strong [ref=e104]: 토론 아바타
+              - generic [ref=e105]: 첫 발표를 기다리고 있어요.
+              - generic [ref=e106]:
+                - generic [ref=e107]:
+                  - text: 내 별명
+                  - textbox "학생 별명" [ref=e108]: 학생
+                - generic [ref=e109]:
+                  - text: 캐릭터
+                  - combobox "캐릭터 종류" [ref=e110]:
+                    - option "부엉이" [selected]
+                    - option "여우"
+                    - option "거북이"
+                    - option "고래"
+            - generic [ref=e111]:
+              - generic [ref=e112]: 발표 0회 · 참여 0회
+              - strong [ref=e113]: 발표할 때마다 쑥쑥 성장!
+          - generic [ref=e115]:
+            - generic [ref=e116]: 만점 기준 발표 진행도
+            - generic [ref=e117]: 0%
+          - generic [ref=e118]:
+            - generic [ref=e119]:
+              - generic [ref=e121]: 첫 발표 · 입장과 주장
+              - generic [ref=e122]: 기록 전
+            - generic [ref=e123]:
+              - generic [ref=e125]: 두 번째 · 근거와 반론
+              - generic [ref=e126]: 기록 전
+            - generic [ref=e127]:
+              - generic [ref=e129]: 세 번째 · 최종 정리
+              - generic [ref=e130]: 기록 전
+          - button "+ 발표 기록하기" [ref=e131] [cursor=pointer]
+          - generic [ref=e132]:
+            - generic [ref=e133]: 만점 준비 기준
+            - generic [ref=e134]:
+              - generic [ref=e135]: 발표 3회
+              - generic [ref=e136]: 창의적 생각
+              - generic [ref=e137]: 논리적 근거
+        - generic [ref=e138]:
+          - heading "생각이 막힐 때" [level=2] [ref=e139]
+          - generic [ref=e140]:
+            - button "첫 문장 도와줘 부담 없이 말문을 열어봐요" [ref=e141] [cursor=pointer]:
+              - img [ref=e143]
+              - generic [ref=e146]:
+                - generic [ref=e147]: 첫 문장 도와줘
+                - text: 부담 없이 말문을 열어봐요
+            - button "내 생각 정리하기 주장·이유·예시로 구조화해요" [ref=e148] [cursor=pointer]:
+              - img [ref=e150]
+              - generic [ref=e153]:
+                - generic [ref=e154]: 내 생각 정리하기
+                - text: 주장·이유·예시로 구조화해요
+            - button "반대쪽 질문 연습 내 논리를 더 단단하게 만들어요" [ref=e155] [cursor=pointer]:
+              - img [ref=e157]
+              - generic [ref=e159]:
+                - generic [ref=e160]: 반대쪽 질문 연습
+                - text: 내 논리를 더 단단하게 만들어요
+          - paragraph [ref=e161]: 헌법 조항 안내는 수업 토론을 위한 학습 자료입니다. 실제 사건의 법률 판단이나 법률 자문을 대신하지 않습니다.
+    - region "학급 성장 현황" [ref=e162]:
+      - generic [ref=e163]:
+        - generic [ref=e164]:
+          - heading "우리 반 토론 레이스" [level=2] [ref=e165]
+          - paragraph [ref=e166]: 친구들의 아바타가 발표와 참여를 타고 완주선을 향해 달려요.
+        - generic [ref=e167]:
+          - button "교사 지원 보기" [ref=e168] [cursor=pointer]
+          - generic [ref=e169]: 실시간 집계 중
+      - generic [ref=e170]:
+        - generic [ref=e171]:
+          - generic [ref=e172]: 참여 학생
+          - strong [ref=e173]: "1"
+        - generic [ref=e174]:
+          - generic [ref=e175]: 전체 발표
+          - strong [ref=e176]: "0"
+        - generic [ref=e177]:
+          - generic [ref=e178]: 토론 참여
+          - strong [ref=e179]: "0"
+      - article [ref=e181]:
+        - img "성장하는 부엉이 토론 캐릭터" [ref=e183]
+        - generic [ref=e192]:
+          - generic [ref=e193]:
+            - generic [ref=e194]: 학생
+            - generic [ref=e195]: "LV 0 · #1"
+          - generic [ref=e196]: 토론 아바타
+          - generic [ref=e197]: 발표 0회 · 참여 0회
+          - generic [ref=e198]:
+            - img "성장하는 부엉이 토론 캐릭터" [ref=e200]
+            - generic [ref=e209]: FINISH
+          - generic [ref=e210]: 출발선을 기다리고 있어요. 첫 생각부터 시작해요.
+          - generic [ref=e211]:
+            - button "AI 코치에게 다음 한 걸음 묻기" [ref=e212] [cursor=pointer]
+            - button "교사 도움 요청" [ref=e213] [cursor=pointer]
+      - generic [ref=e214]: 완주 목표는 발표 3회와 코치 질문·토론 발언 3회예요. 같은 별명은 한 아바타로 합산됩니다. 집계는 서버 재시작 시 초기화돼요.
+    - region "학급 공개 토론" [ref=e215]:
+      - generic [ref=e216]:
+        - generic [ref=e217]:
+          - heading "우리 반 공개 토론" [level=2] [ref=e218]
+          - paragraph [ref=e219]: 같은 토론실 학생들의 주장을 읽고, 답글로 생각을 주고받아요.
+        - generic [ref=e220]: 실시간 토론
+      - generic [ref=e223]: 아직 발언이 없어요. 찬성·반대·배심원으로 첫 의견을 남겨보세요.
+      - generic [ref=e224]:
+        - generic [ref=e225]:
+          - combobox "토론 역할" [ref=e226]:
+            - option "찬성팀" [selected]
+            - option "반대팀"
+            - option "배심원"
+          - textbox "익명 이름" [ref=e227]: 학생
+          - textbox "학급 토론 발언" [ref=e228]:
+            - /placeholder: 주장, 근거, 질문을 남겨보세요
+          - button "발언 등록" [ref=e229] [cursor=pointer]
+        - generic [ref=e230]: 실명 대신 별명을 사용하세요. 발언은 같은 수업 페이지 접속자에게 공개되며, 서버가 꺼지면 삭제됩니다.
+  - status
