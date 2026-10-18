@@ -1263,22 +1263,50 @@ document.querySelector('#roomForm').addEventListener('submit', async event => {
   finally { button.disabled = false; }
 });
 
-const articleChoices = {
-  10: { title: '제10조 · 인간의 존엄과 가치', short: '인간의 존엄과 행복 추구' },
-  11: { title: '제11조 · 평등권', short: '법 앞의 평등과 차별 금지' },
-  17: { title: '제17조 · 사생활의 비밀과 자유', short: '개인 생활과 사적인 정보 보호' },
-  21: { title: '제21조 · 표현의 자유', short: '의견을 말하고 나눌 자유' },
-  31: { title: '제31조 제1항 · 교육을 받을 권리', short: '능력에 따라 균등하게 교육받을 권리' },
-  37: { title: '제37조 제2항 · 기본권 제한의 한계', short: '권리 제한은 필요한 범위와 법률에 따라야 함' }
-};
-const gameQuestionBank = [
-  { prompt: '친구가 허락 없이 내 휴대전화 사진첩을 열어봤어요. 가장 직접 연결되는 권리는 무엇일까요?', hint: '개인의 사적인 생활과 정보를 지키는 권리예요.', answer: 17, options: [10, 17, 21, 31], explanation: '헌법 제17조는 모든 국민이 사생활의 비밀과 자유를 침해받지 않는다고 정합니다.' },
-  { prompt: '학생이 학교 규칙에 대한 자기 의견을 발표하고 친구들과 토론합니다. 어떤 권리와 가장 가까울까요?', hint: '생각과 의견을 표현하고 다른 사람과 나누는 권리예요.', answer: 21, options: [10, 11, 21, 37], explanation: '헌법 제21조 제1항은 언론·출판과 집회·결사의 자유를 보장합니다. 구체적인 학교 상황도 함께 살펴봐야 해요.' },
-  { prompt: '모든 학생이 능력에 따라 차별 없이 교육받을 기회를 가져야 합니다. 어떤 조항을 찾아볼까요?', hint: '조항 제목에 ‘교육’이 직접 들어 있어요.', answer: 31, options: [11, 17, 31, 37], explanation: '헌법 제31조 제1항은 모든 국민이 능력에 따라 균등하게 교육을 받을 권리를 가진다고 정합니다.' },
-  { prompt: '학교가 기본권을 제한하는 규칙을 만들 때, 꼭 필요한 범위인지 따져보려 합니다. 어떤 조항이 기준이 될까요?', hint: '기본권을 제한할 때 지켜야 할 조건을 담은 조항이에요.', answer: 37, options: [10, 17, 21, 37], explanation: '헌법 제37조 제2항은 자유와 권리를 필요한 경우에 한해 법률로 제한할 수 있고, 본질적인 내용을 침해할 수 없다고 정합니다.' },
-  { prompt: '학생의 배경이 다르다는 이유로 학교 활동 기회를 다르게 주면 안 된다는 생각과 가장 가까운 권리는?', hint: '모두를 같은 기준으로 대해야 한다는 권리예요.', answer: 11, options: [10, 11, 17, 31], explanation: '헌법 제11조는 모든 국민이 법 앞에 평등하고 차별받지 않는다는 원칙을 둡니다.' },
-  { prompt: '학생을 단지 규칙을 따라야 하는 대상으로만 보지 않고, 존엄과 행복을 지닌 사람으로 존중해야 합니다. 어떤 조항일까요?', hint: '헌법의 기본권 장을 여는 인간의 존엄에 관한 조항이에요.', answer: 10, options: [10, 17, 21, 31], explanation: '헌법 제10조는 모든 국민의 인간으로서의 존엄과 가치, 행복추구권을 선언합니다.' }
-];
+function flightArticle(number) {
+  const row = constitutionCardsData.find(card => card[0] === Number(number));
+  return row ? { number: row[0], title: `제${row[0]}조 · ${row[1]}`, short: row[2] } : null;
+}
+
+function getTopicFlightArticles() {
+  const text = `${classTopic.title} ${classTopic.scenario}`;
+  const numbers = [];
+  if (/사생활|개인정보|휴대전화|스마트폰|촬영|통신/.test(text)) numbers.push(17, 18, 16, 12, 37);
+  if (/표현|언론|발언|게시|집회|시위/.test(text)) numbers.push(21, 22, 11, 37);
+  if (/교육|학교|학생|수업|급식/.test(text)) numbers.push(31, 11, 10, 37);
+  if (/평등|차별|장애|종교|성별/.test(text)) numbers.push(11, 10, 31, 37);
+  if (/대통령|국회|탄핵|긴급명령|권력분립|정부/.test(text)) numbers.push(76, 66, 89, 91, 107, 37, 10);
+  if (/선거|투표|정당|선거운동/.test(text)) numbers.push(24, 25, 41, 60, 114, 116, 11);
+  if (/노동|근로|임금|노동조합/.test(text)) numbers.push(32, 33, 11, 10, 37);
+  if (/환경|기후|오염|주거|재산/.test(text)) numbers.push(35, 23, 120, 122, 37, 10);
+  if (/양심|종교/.test(text)) numbers.push(19, 20, 11, 10);
+  for (const number of [10, 11, 17, 21, 31, 37]) if (numbers.length < 8) numbers.push(number);
+  return [...new Set(numbers)].map(flightArticle).filter(Boolean).slice(0, 16);
+}
+
+function buildFallbackFlightQuestions() {
+  const topicCards = getTopicFlightArticles();
+  const available = topicCards.map(card => card.number);
+  const fallbackIds = [10, 11, 17, 21, 31, 37];
+  for (const number of fallbackIds) if (available.length < 4 && !available.includes(number)) available.push(number);
+  const title = classTopic.title;
+  const byNumber = number => flightArticle(number) || flightArticle(10);
+  const choose = (answer, prompt, hint) => {
+    const options = [answer, ...available.filter(number => number !== answer)].slice(0, 4);
+    const article = byNumber(answer);
+    return { prompt, hint: `${hint} ${article.short}`, answer, options, explanation: article.short };
+  };
+  const focus = topicCards[0]?.number || 10;
+  const second = topicCards.find(card => card.number !== focus)?.number || 11;
+  const rounds = [
+    choose(focus, `이번 수업 주제 “${title}”와 가장 직접 연결되는 조항은 무엇일까요?`, '상황에서 가장 영향을 받는 기본권을 떠올려보세요.'),
+    choose(37, `“${title}”과 관련해 기본권 제한이 꼭 필요한지 따져볼 때 참고할 조항은?`, '기본권 제한의 필요성과 한계를 다루는 조항이에요.'),
+    choose(11, `“${title}”을 적용할 때 학생들을 공평하게 대하는 원칙과 가장 가까운 조항은?`, '법 앞의 평등과 차별 금지를 확인해보세요.'),
+    choose(second, `오늘 주제에서 함께 보호해야 할 또 다른 권리를 찾는다면 어떤 조항일까요?`, '아바타의 조항 카드를 읽고 연결되는 권리를 골라보세요.'),
+    choose(10, `“${title}”을 논의할 때 사람의 존엄과 자율을 떠올리게 하는 조항은?`, '헌법의 기본권을 해석할 때 바탕이 되는 원칙이에요.')
+  ];
+  return rounds;
+}
 let gameQuestion = null;
 let gameDeck = [];
 let gameScore = 0;
@@ -1290,6 +1318,14 @@ let gameSelectedIndex = 0;
 let gameStarted = false;
 let gameTimerId;
 let gameTransitionId;
+let flightLane = 1;
+let flightObstacles = [];
+let flightObstacleLayer;
+let flightMarkers;
+let flightAnimationId;
+let flightLastFrame = 0;
+let flightSpawnClock = 0;
+let flightHits = 0;
 const gameGoal = 10;
 function gameBestKey() { return `courtroom-law-game-best:${activeStudent}`; }
 function gameBestScoreKey() { return `courtroom-law-game-best-score:${activeStudent}`; }
@@ -1310,26 +1346,161 @@ function shuffled(items) {
 function updateFlightProgress() {
   const progress = Math.min(gameScore / gameGoal * 100, 100);
   document.querySelector('#flightFill').style.width = `${progress}%`;
-  document.querySelector('#gamePlane').style.setProperty('--flight-progress', `${progress}%`);
-  document.querySelector('#gamePlane').style.setProperty('--flight-altitude', `${34 + (gameScore % 4) * 10}%`);
+  document.querySelector('#gamePlane').style.left = `${3 + progress * 0.68}%`;
+  setFlightLane(flightLane);
 }
-function startConstitutionGame() {
+
+function setFlightLane(lane) {
+  flightLane = Math.max(0, Math.min(2, lane));
+  const tops = [18, 44, 68];
+  document.querySelector('#gamePlane').style.top = `${tops[flightLane]}%`;
+  const laneLabel = document.querySelector('#flightLaneName');
+  if (laneLabel) laneLabel.textContent = ['위 항로', '가운데 항로', '아래 항로'][flightLane];
+}
+
+function initFlightControls() {
+  const sky = document.querySelector('.flight-sky');
+  if (!flightObstacleLayer) {
+    flightMarkers = document.createElement('div');
+    flightMarkers.className = 'flight-lane-markers';
+    flightMarkers.setAttribute('aria-hidden', 'true');
+    flightObstacleLayer = document.createElement('div');
+    flightObstacleLayer.className = 'flight-obstacles';
+    flightObstacleLayer.setAttribute('aria-hidden', 'true');
+    sky.append(flightMarkers, flightObstacleLayer);
+    const controls = document.createElement('div');
+    controls.className = 'flight-steering';
+    const label = document.createElement('span');
+    label.textContent = '항로';
+    const laneName = document.createElement('strong');
+    laneName.id = 'flightLaneName';
+    const up = document.createElement('button');
+    up.type = 'button';
+    up.dataset.flight = 'up';
+    up.setAttribute('aria-label', '비행기를 위 항로로 조종');
+    up.textContent = '↑ 상승';
+    const down = document.createElement('button');
+    down.type = 'button';
+    down.dataset.flight = 'down';
+    down.setAttribute('aria-label', '비행기를 아래 항로로 조종');
+    down.textContent = '↓ 하강';
+    controls.append(label, laneName, up, down);
+    sky.insertAdjacentElement('afterend', controls);
+    up.addEventListener('click', () => setFlightLane(flightLane - 1));
+    down.addEventListener('click', () => setFlightLane(flightLane + 1));
+    const hits = document.createElement('span');
+    hits.className = 'game-score';
+    hits.id = 'gameHits';
+    hits.textContent = '충돌 0';
+    document.querySelector('.game-head .game-scoreboard').append(hits);
+  }
+  document.querySelector('.flight-kbd').textContent = '↑ ↓ 항로 피하기 · 1-4 조항 선택 · Enter 확인';
+  document.querySelector('.game-intro p').textContent = '45초 동안 오늘 주제에 맞는 헌법 조항을 고르세요. ↑ ↓ 나 터치 버튼으로 비행기를 위아래로 조종해 새·먹구름·강풍을 피하세요. 정답은 1-4 또는 선택 후 Enter로 고릅니다.';
+}
+
+function spawnFlightObstacle() {
+  const variants = [
+    { className: 'storm', label: '먹구름', svg: '<svg viewBox="0 0 64 54"><path d="M14 39a12 12 0 0 1 2-24 18 18 0 0 1 34 4 10 10 0 0 1 2 20Z" fill="#657a87" stroke="#344a55" stroke-width="3"/><path d="m32 27-6 10h7l-3 9 12-15h-7l4-4Z" fill="#f0c35e"/></svg>' },
+    { className: 'bird', label: '새 무리', svg: '<svg viewBox="0 0 64 54"><path d="M5 29q12-18 25 0 13-18 29 0M13 42q9-13 18 0 9-13 20 0" fill="none" stroke="#576b73" stroke-width="5" stroke-linecap="round"/></svg>' },
+    { className: 'wind', label: '강풍', svg: '<svg viewBox="0 0 64 54"><path d="M7 17h36q12 0 6-9m-42 20h48q10 0 5 9M16 42h25" fill="none" stroke="#b48d4d" stroke-width="4" stroke-linecap="round"/></svg>' }
+  ];
+  const variant = variants[Math.floor(Math.random() * variants.length)];
+  const element = document.createElement('div');
+  element.className = `flight-obstacle ${variant.className}`;
+  element.setAttribute('aria-label', variant.label);
+  element.innerHTML = variant.svg;
+  element.style.left = '106%';
+  const lane = Math.floor(Math.random() * 3);
+  element.style.top = `${[33, 59, 83][lane]}%`;
+  flightObstacleLayer.append(element);
+  flightObstacles.push({ element, lane, x: 106, checked: false });
+}
+
+function startFlightAnimation() {
+  cancelAnimationFrame(flightAnimationId);
+  flightLastFrame = 0;
+  flightSpawnClock = 0;
+  flightObstacles = [];
+  flightObstacleLayer.replaceChildren();
+  flightAnimationId = requestAnimationFrame(updateFlightScene);
+}
+
+function updateFlightScene(now) {
+  if (!gameStarted) return;
+  const delta = flightLastFrame ? Math.min(now - flightLastFrame, 80) : 16;
+  flightLastFrame = now;
+  flightSpawnClock += delta;
+  if (flightSpawnClock >= 1050) {
+    flightSpawnClock = 0;
+    spawnFlightObstacle();
+  }
+  const sky = document.querySelector('.flight-sky');
+  const plane = document.querySelector('#gamePlane');
+  const planeCenter = ((parseFloat(plane.style.left) / 100 * sky.clientWidth) + plane.clientWidth / 2) / sky.clientWidth * 100;
+  flightObstacles = flightObstacles.filter(obstacle => {
+    obstacle.x -= delta * 0.032;
+    obstacle.element.style.left = `${obstacle.x}%`;
+    if (!obstacle.checked && obstacle.x <= planeCenter + 1) {
+      obstacle.checked = true;
+      if (obstacle.lane === flightLane) {
+        flightHits += 1;
+        gameTimeLeft = Math.max(0, gameTimeLeft - 3);
+        gameStreak = 0;
+        document.querySelector('#gameHits').textContent = `충돌 ${flightHits}`;
+        const feedback = document.querySelector('#gameFeedback');
+        feedback.className = 'game-feedback try';
+        feedback.textContent = '장애물과 부딪혀 3초가 줄었어요. ↑ ↓ 로 빈 항로를 찾아보세요.';
+        refreshGameBadges();
+      }
+    }
+    if (obstacle.x < -12) { obstacle.element.remove(); return false; }
+    return true;
+  });
+  if (gameTimeLeft <= 0) { finishConstitutionGame(false); return; }
+  flightAnimationId = requestAnimationFrame(updateFlightScene);
+}
+async function startConstitutionGame() {
   if (!profileReady) { toast('비행 점수를 학급에 기록하려면 먼저 별명을 설정해 주세요.'); document.querySelector('#profileName').focus(); return; }
   clearInterval(gameTimerId);
   clearTimeout(gameTransitionId);
-  gameDeck = shuffled(gameQuestionBank);
+  const startButton = document.querySelector('#gameStart');
+  const originalLabel = startButton.textContent;
+  startButton.disabled = true;
+  startButton.textContent = '오늘의 주제로 문제 만드는 중…';
+  try {
+    const response = await fetch('/api/game/flight-questions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ articles: getTopicFlightArticles().map(card => ({ number: card.number, title: card.title, summary: card.short })) })
+    });
+    if (!response.ok) throw new Error('topic_questions_unavailable');
+    const result = await response.json();
+    if (!Array.isArray(result.questions) || result.questions.length < 5) throw new Error('invalid_topic_questions');
+    gameDeck = shuffled(result.questions.slice(0, 5));
+  } catch {
+    gameDeck = shuffled(buildFallbackFlightQuestions());
+    document.querySelector('#gameHelp').textContent = `“${classTopic.title}” 관련 기본 문제로 비행을 시작해요.`;
+  } finally {
+    startButton.disabled = false;
+    startButton.textContent = originalLabel;
+  }
   gameScore = 0;
   gameStreak = 0;
   gameTimeLeft = 45;
   gameQuestionNumber = 0;
   gameStarted = true;
+  flightLane = 1;
+  flightHits = 0;
+  initFlightControls();
   document.querySelector('#gameIntro').hidden = true;
   document.querySelector('#gameSession').hidden = false;
   document.querySelector('#gameResult').hidden = true;
   document.querySelector('#gamePlay').hidden = false;
   refreshGameBadges();
   updateFlightProgress();
+  document.querySelector('#gameHits').textContent = '충돌 0';
   renderGameQuestion();
+  startFlightAnimation();
   gameTimerId = setInterval(() => {
     gameTimeLeft -= 1;
     refreshGameBadges();
@@ -1337,7 +1508,7 @@ function startConstitutionGame() {
   }, 1000);
 }
 function renderGameQuestion() {
-  if (!gameDeck.length) gameDeck = shuffled(gameQuestionBank);
+  if (!gameDeck.length) gameDeck = shuffled(buildFallbackFlightQuestions());
   gameQuestion = gameDeck.pop();
   gameAttempts = 0;
   gameSelectedIndex = 0;
@@ -1349,7 +1520,7 @@ function renderGameQuestion() {
   const choices = document.querySelector('#gameChoices');
   choices.innerHTML = '';
   shuffled(gameQuestion.options).forEach((article, index) => {
-    const option = articleChoices[article];
+    const option = flightArticle(article);
     const button = document.createElement('button');
     button.type = 'button';
     button.className = `game-choice ${index === 0 ? 'selected' : ''}`;
@@ -1371,11 +1542,10 @@ function selectFlightChoice(index) {
   const buttons = [...document.querySelectorAll('.game-choice')];
   gameSelectedIndex = (index + buttons.length) % buttons.length;
   buttons.forEach((button, buttonIndex) => button.classList.toggle('selected', buttonIndex === gameSelectedIndex));
-  document.querySelector('#gamePlane').style.setProperty('--flight-altitude', `${24 + Math.floor(gameSelectedIndex / 2) * 28}%`);
 }
 function saveGameThought(question, article, correct) {
   const at = Date.now();
-  const chosen = articleChoices[article];
+  const chosen = flightArticle(article);
   state.thoughtHistory.push({
     id: `game-answer-${at}`,
     type: 'game-answer',
@@ -1389,7 +1559,7 @@ function saveGameThought(question, article, correct) {
 function showGameExplanation(question, success) {
   const feedback = document.querySelector('#gameFeedback');
   feedback.className = `game-feedback ${success ? 'good' : 'try'}`;
-  feedback.textContent = `${success ? '정답! +1점. ' : `정답은 ${articleChoices[question.answer].title}예요. `}${question.explanation}`;
+  feedback.textContent = `${success ? '정답! +1점. ' : `정답은 ${flightArticle(question.answer).title}예요. `}${question.explanation}`;
   const link = document.createElement('a');
   link.className = 'game-source';
   link.href = 'https://www.law.go.kr/법령/대한민국헌법';
@@ -1451,6 +1621,7 @@ async function finishConstitutionGame(reachedDestination) {
   gameStarted = false;
   clearInterval(gameTimerId);
   clearTimeout(gameTransitionId);
+  cancelAnimationFrame(flightAnimationId);
   document.querySelector('#gamePlay').hidden = true;
   document.querySelector('#gameResult').hidden = false;
   document.querySelector('#gameResultTitle').textContent = reachedDestination ? '목적지 도착! 멋진 비행이었어요.' : '시간 종료! 착륙 완료';
@@ -1486,10 +1657,10 @@ function handleFlightKeys(event) {
     buttons[Number(event.key) - 1]?.click();
   } else if (event.key === 'ArrowUp') {
     event.preventDefault();
-    if (gameSelectedIndex >= 2) selectFlightChoice(gameSelectedIndex - 2);
+    setFlightLane(flightLane - 1);
   } else if (event.key === 'ArrowDown') {
     event.preventDefault();
-    if (gameSelectedIndex < 2) selectFlightChoice(gameSelectedIndex + 2);
+    setFlightLane(flightLane + 1);
   } else if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
     event.preventDefault();
     selectFlightChoice(gameSelectedIndex % 2 === 0 ? gameSelectedIndex + 1 : gameSelectedIndex - 1);
@@ -1778,6 +1949,8 @@ document.querySelector('#tetrisAskCoach').addEventListener('click', () => {
   sendChat(`오늘의 주제 “${classTopic.title}”와 방금 줄을 지운 조항을 연결해 설명해주세요.\n${articles}\n이 조항을 토론에서 어떻게 활용하고, 반대쪽에서는 어떤 질문을 할 수 있을까요?`);
 });
 
+initFlightControls();
+setFlightLane(1);
 renderStage();
 renderProgress();
 renderChat();

@@ -314,6 +314,62 @@ async function handleApi(request, response, url) {
   if (request.method === 'GET' && url.pathname === '/api/status') {
     return json(response, 200, { upstage: Boolean(process.env.UPSTAGE_API_KEY), law: Boolean(process.env.MOLEG_API_KEY), lawApi: lawApiState, room: true });
   }
+  if (request.method === 'POST' && url.pathname === '/api/game/flight-questions') {
+    try {
+      const body = await readBody(request, 10000);
+      const cards = (Array.isArray(body.articles) ? body.articles : []).map(article => ({
+        number: Number(article.number),
+        title: String(article.title || '').slice(0, 120),
+        summary: String(article.summary || '').slice(0, 300)
+      })).filter(article => Number.isInteger(article.number) && article.number >= 1 && article.number <= 130 && article.title && article.summary).slice(0, 20);
+      if (cards.length < 4) return json(response, 400, { error: '관련 조항을 준비하지 못했어요.' });
+      if (!process.env.UPSTAGE_API_KEY) return json(response, 503, { error: 'Upstage 연결을 확인할 수 없어요.' });
+      const sources = await retrieveSources(`${classTopic.title} ${classTopic.scenario}`);
+      const upstream = await fetch('https://api.upstage.ai/v1/chat/completions', {
+        method: 'POST',
+        signal: AbortSignal.timeout(20000),
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${process.env.UPSTAGE_API_KEY}` },
+        body: JSON.stringify({
+          model: 'solar-mini4',
+          messages: [
+            { role: 'system', content: `이번 수업 주제는 “${classTopic.title}”입니다. ${classTopic.scenario} 이 주제에 직접 맞는 짧고 재미있는 제한시간 퀴즈 5문제를 만드세요. 학교·생활 장면을 질문으로 만들고, 학생이 헌법 조항을 골라 비행기를 조종하는 게임입니다. 제공된 articleCards의 조항 번호만 선택지로 쓰고, 조항 요약과 officialSources를 기준으로 답을 정하세요. 정치·사회적 민감 주제도 정파적 설득 없이 서로 다른 권리와 공익을 균형 있게 다루세요. 각 문제는 정확히 4개의 서로 다른 선택지를 갖고, 정답은 그중 1개여야 합니다. 힌트와 해설은 한 문장으로 짧게 쓰고, 실제 조문에 없는 내용을 만들어내지 마세요.` },
+            { role: 'user', content: JSON.stringify({ topic: classTopic, articleCards: cards, officialSources: sources.map(({ title, url, excerpt }) => ({ title, url, excerpt: excerpt.slice(0, 800) })) }) }
+          ],
+          temperature: 0.35,
+          max_tokens: 2200,
+          response_format: {
+            type: 'json_schema',
+            json_schema: {
+              name: 'topic_constitution_flight',
+              strict: true,
+              schema: {
+                type: 'object',
+                properties: { questions: { type: 'array', items: { type: 'object', properties: { prompt: { type: 'string' }, hint: { type: 'string' }, answer: { type: 'integer' }, options: { type: 'array', items: { type: 'integer' } }, explanation: { type: 'string' } }, required: ['prompt', 'hint', 'answer', 'options', 'explanation'], additionalProperties: false } } },
+                required: ['questions'],
+                additionalProperties: false
+              }
+            }
+          }
+        })
+      });
+      if (!upstream.ok) return json(response, 502, { error: '오늘 주제에 맞는 문제를 준비하지 못했어요.' });
+      const payload = await upstream.json();
+      const output = payload?.choices?.[0]?.message?.content;
+      if (!output) return json(response, 502, { error: '문제 응답이 비어 있어요.' });
+      const parsed = JSON.parse(output);
+      const allowed = new Set(cards.map(article => article.number));
+      const questions = (Array.isArray(parsed.questions) ? parsed.questions : []).map(question => {
+        const options = [...new Set((question.options || []).map(Number))].filter(number => allowed.has(number)).slice(0, 4);
+        const answer = Number(question.answer);
+        if (options.length !== 4 || !options.includes(answer)) return null;
+        return { prompt: String(question.prompt || '').slice(0, 260), hint: String(question.hint || '').slice(0, 180), answer, options, explanation: String(question.explanation || '').slice(0, 300) };
+      }).filter(question => question?.prompt && question.hint && question.explanation).slice(0, 5);
+      if (questions.length < 5) return json(response, 502, { error: '문제 구성이 올바르지 않아요.' });
+      return json(response, 200, { questions, topicTitle: classTopic.title });
+    } catch {
+      return json(response, 502, { error: '주제별 문제를 만들지 못했어요. 기본 연습 문제로 이어갈게요.' });
+    }
+  }
   if (request.method === 'GET' && url.pathname === '/api/class/topic') return json(response, 200, { topic: classTopic });
   if (request.method === 'POST' && url.pathname === '/api/class/topic') {
     try {
@@ -390,6 +446,62 @@ async function handleApi(request, response, url) {
       return json(response, 201, { post, member });
     } catch {
       return json(response, 400, { error: 'invalid_message' });
+    }
+  }
+  if (request.method === 'POST' && url.pathname === '/api/game/flight-questions') {
+    try {
+      const body = await readBody(request, 9000);
+      const cards = (Array.isArray(body.articles) ? body.articles : []).map(article => ({
+        number: Number(article.number),
+        title: String(article.title || '').slice(0, 100),
+        summary: String(article.summary || '').slice(0, 260)
+      })).filter(article => Number.isInteger(article.number) && article.number >= 1 && article.number <= 130 && article.title && article.summary).slice(0, 24);
+      if (cards.length < 4) return json(response, 400, { error: '관련 헌법 조항을 준비하지 못했습니다.' });
+      if (!process.env.UPSTAGE_API_KEY) return json(response, 503, { error: 'Upstage 연결을 확인할 수 없습니다.' });
+      const sources = await retrieveSources(`${classTopic.title} ${classTopic.scenario}`);
+      const responseFromUpstage = await fetch('https://api.upstage.ai/v1/chat/completions', {
+        method: 'POST',
+        signal: AbortSignal.timeout(20000),
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${process.env.UPSTAGE_API_KEY}` },
+        body: JSON.stringify({
+          model: 'solar-mini4',
+          messages: [
+            { role: 'system', content: `이번 수업의 헌법 토론 주제는 “${classTopic.title}”입니다. 상황: ${classTopic.scenario} 이 주제에 직접 연결된 45초 조항 비행대 퀴즈 5문제를 만드세요. 각 문제는 짧은 생활 상황, 1개의 정답, 서로 다른 3개의 오답 선택지, 짧은 힌트와 설명을 포함해야 합니다. 제공된 articleCards의 number만 선택지로 사용하고, 각 카드 summary를 보고 가장 타당한 한 조항만 정답으로 지정하세요. 정치·사회적으로 민감한 주제도 정파적 설득 없이 헌법상 권리와 공익을 균형 있게 다룹니다. 법 조항을 만들어내거나 요약을 정확한 원문처럼 인용하지 마세요. 각 문제의 options는 정확히 4개의 고유한 조항 번호여야 하며 answer는 options 중 하나여야 합니다.` },
+            { role: 'user', content: JSON.stringify({ classTopic, articleCards: cards, officialSources: sources.map(({ title, url, excerpt }) => ({ title, url, excerpt: excerpt.slice(0, 700) })) }) }
+          ],
+          temperature: 0.35,
+          max_tokens: 2200,
+          response_format: {
+            type: 'json_schema',
+            json_schema: {
+              name: 'topic_flight_questions',
+              strict: true,
+              schema: {
+                type: 'object',
+                properties: { questions: { type: 'array', items: { type: 'object', properties: { prompt: { type: 'string' }, hint: { type: 'string' }, answer: { type: 'integer' }, options: { type: 'array', items: { type: 'integer' } }, explanation: { type: 'string' } }, required: ['prompt', 'hint', 'answer', 'options', 'explanation'], additionalProperties: false } } },
+                required: ['questions'],
+                additionalProperties: false
+              }
+            }
+          }
+        })
+      });
+      if (!responseFromUpstage.ok) return json(response, 502, { error: '오늘의 주제에 맞는 문제를 만들지 못했습니다.' });
+      const payload = await responseFromUpstage.json();
+      const output = payload?.choices?.[0]?.message?.content;
+      if (!output) return json(response, 502, { error: '퀴즈 응답을 받지 못했습니다.' });
+      const parsed = JSON.parse(output);
+      const allowed = new Set(cards.map(article => article.number));
+      const questions = (Array.isArray(parsed.questions) ? parsed.questions : []).map(question => {
+        const options = [...new Set((question.options || []).map(Number))].filter(number => allowed.has(number)).slice(0, 4);
+        const answer = Number(question.answer);
+        if (options.length !== 4 || !options.includes(answer)) return null;
+        return { prompt: String(question.prompt || '').slice(0, 260), hint: String(question.hint || '').slice(0, 180), answer, options, explanation: String(question.explanation || '').slice(0, 300) };
+      }).filter(question => question?.prompt && question.hint && question.explanation).slice(0, 5);
+      if (questions.length < 5) return json(response, 502, { error: '퀴즈 문제 형식이 올바르지 않습니다.' });
+      return json(response, 200, { questions, topicTitle: classTopic.title });
+    } catch {
+      return json(response, 502, { error: '주제별 퀴즈 연결이 원활하지 않아요. 기본 연습 문제를 시작할게요.' });
     }
   }
   if (request.method === 'POST' && url.pathname === '/api/chat') {
