@@ -83,6 +83,12 @@ function relevantStatutes(query) {
   if (/학교|교육|학생|교실|수업|휴대전화|스마트폰/.test(query)) titles.push('초·중등교육법', '교육기본법');
   if (/개인정보|사생활|휴대전화|스마트폰|촬영|검색/.test(query)) titles.push('개인정보 보호법');
   if (/표현|게시|언론|인터넷|온라인/.test(query)) titles.push('정보통신망 이용촉진 및 정보보호 등에 관한 법률');
+  if (/선거|투표|정당|선거운동/.test(query)) titles.push('공직선거법', '정당법');
+  if (/대통령|국회|탄핵|권력분립|국무총리/.test(query)) titles.push('국회법', '헌법재판소법', '정부조직법');
+  if (/노동|근로|임금|노동조합/.test(query)) titles.push('근로기준법', '노동조합 및 노동관계조정법');
+  if (/차별|평등|장애|인권/.test(query)) titles.push('국가인권위원회법', '장애인차별금지 및 권리구제 등에 관한 법률');
+  if (/환경|기후|오염|환경권/.test(query)) titles.push('환경정책기본법', '환경보건법');
+  if (/집회|시위/.test(query)) titles.push('집회 및 시위에 관한 법률');
   return [...new Set(titles)].slice(0, 3);
 }
 
@@ -219,7 +225,7 @@ function getClassBoard() {
 }
 
 async function generateFeedback({ message, history, stage, position, topic, articleCard }) {
-  const sources = await retrieveSources(message);
+  const sources = await retrieveSources(`${topic.title} ${topic.scenario} ${message}`.slice(0, 360));
   const key = process.env.UPSTAGE_API_KEY;
   if (!key) {
     const onTopic = isDebateTopicRelated(message, topic);
@@ -256,7 +262,7 @@ async function generateFeedback({ message, history, stage, position, topic, arti
     body: JSON.stringify({
       model: 'solar-mini4',
       messages: [
-        { role: 'system', content: `당신은 대한민국 헌법 모의법정 수업의 토론 코치입니다. 이번 수업의 유일한 토론 주제는 “${topic.title}”입니다. 상황 설명: ${topic.scenario} 최신 학생 발언만 보고 주제와 관련 있는지 판단하세요. 이전 대화가 주제와 관련 있어도 최신 발언이 전혀 다른 잡담·낙서·반복이면 onTopic=false로 하고, 혼내지 말고 현재 주제로 돌아오는 문장 틀과 질문을 제안하세요. 관련 발언이면 onTopic=true로 표시하세요. selectedConstitutionCard는 조항을 찾도록 돕는 짧은 학습용 요약이지 정확한 원문 인용이 아닙니다. officialSources에 원문 근거가 없으면 요약을 법 조문처럼 인용하지 말고 국가법령정보센터 원문에서 확인하도록 안내하세요. 학생의 입장을 대신 정하지 말고 구체적인 칭찬과 보완점, 다음 질문을 한국어 존댓말로 답하세요. 창의성과 논리성은 실제 발언에 근거해 평가하고 빈 칭찬은 하지 마세요. 제공된 officialSources만 근거로 인용하며 조항·사실·판례를 만들지 마세요. 헌법 원문과 쉬운 생활법령 설명을 구별하고 법적 결론을 단정하지 마세요. 학생들이 서로 반론과 질문을 주고받도록 도와주세요. 개인정보나 실명 공개를 부추기지 마세요.` },
+        { role: 'system', content: `당신은 대한민국 헌법 모의법정 수업의 토론 코치입니다. 이번 수업의 유일한 토론 주제는 “${topic.title}”입니다. 상황 설명: ${topic.scenario} 최신 학생 발언만 보고 주제와 관련 있는지 판단하세요. 이전 대화가 주제와 관련 있어도 최신 발언이 전혀 다른 잡담·낙서·반복이면 onTopic=false로 하고, 혼내지 말고 현재 주제로 돌아오는 문장 틀과 질문을 제안하세요. 정치·사회적으로 민감한 쟁점이라는 이유만으로 onTopic=false 처리하거나 답변을 피하지 마세요. 그런 주제는 특정 정당·후보를 지지하지 않는 중립적 학습 설명으로 다루고, 충돌하는 기본권과 공익, 찬반의 법적 근거를 균형 있게 비교하세요. 선거운동·정파적 설득이나 영토 쟁점의 선동적 주장을 작성하지 말고, 그런 요청은 중립적 헌법·법령 설명으로 돌려주세요. 관련 발언이면 onTopic=true로 표시하세요. selectedConstitutionCard는 조항을 찾도록 돕는 짧은 학습용 요약이지 정확한 원문 인용이 아닙니다. officialSources에 원문 근거가 없으면 요약을 법 조문처럼 인용하지 말고 국가법령정보센터 원문에서 확인하도록 안내하세요. 학생의 입장을 대신 정하지 말고 구체적인 칭찬과 보완점, 다음 질문을 한국어 존댓말로 답하세요. 창의성과 논리성은 실제 발언에 근거해 평가하고 빈 칭찬은 하지 마세요. 제공된 officialSources만 근거로 인용하며 조항·사실·판례를 만들지 마세요. 헌법 원문과 쉬운 생활법령 설명을 구별하고 법적 결론을 단정하지 마세요. 학생들이 서로 반론과 질문을 주고받도록 도와주세요. 개인정보나 실명 공개를 부추기지 마세요.` },
         ...history.map(item => ({ role: item.role === 'model' ? 'assistant' : 'user', content: item.text })),
         { role: 'user', content: JSON.stringify(context) }
       ],
@@ -316,7 +322,6 @@ async function handleApi(request, response, url) {
       if (title.length < 6 || !/헌법|권리|기본권|평등|표현|사생활|개인정보|교육|학교|학생|휴대|자유|존엄|차별|제한|인권|공익|노동|종교|언론|집회|양심|참정|재산|주거|신체|보건|환경/i.test(`${title} ${scenario}`)) {
         return json(response, 400, { error: '헌법의 권리나 기본권 쟁점과 연결되는 주제를 입력해 주세요.' });
       }
-      if (/정치|선거|정당(?:\s|간|별|정치|의)|대통령|국회|탄핵|독도|영토|동해|정권|정치인/i.test(`${title} ${scenario}`)) return json(response, 400, { error: '생활 속 기본권과 연결되는 비정치적 토론 주제를 입력해 주세요.' });
       const changed = title !== classTopic.title || scenario !== classTopic.scenario;
       if (changed) roomPosts.length = 0;
       classTopic = { title, scenario, updatedAt: Date.now() };

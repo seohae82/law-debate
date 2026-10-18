@@ -659,11 +659,6 @@ async function saveClassTopic() {
   const scenario = document.querySelector('#topicScenario').value.trim();
   const status = document.querySelector('#topicStatus');
   const constitutionTerms = /헌법|권리|기본권|평등|표현|사생활|개인정보|교육|학교|학생|휴대|자유|존엄|차별|제한|인권|공익|노동|종교|언론|집회|양심|참정|재산|주거|신체|보건|환경/i;
-  if (/정치|선거|정당(?:\s|간|별|정치|의)|대통령|국회|탄핵|독도|영토|동해|정권|정치인/i.test(`${title} ${scenario}`)) {
-    status.classList.add('error');
-    status.textContent = '정치·영토 쟁점 대신 생활 속 기본권과 연결된 주제를 입력해 주세요.';
-    return;
-  }
   if (title.length < 6 || !constitutionTerms.test(`${title} ${scenario}`)) {
     status.classList.add('error');
     status.textContent = '헌법의 권리나 기본권 쟁점과 연결된 주제를 입력해 주세요.';
