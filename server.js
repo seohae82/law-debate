@@ -1,14 +1,21 @@
 import { createServer } from 'node:http';
-import { readFile } from 'node:fs/promises';
+import { readFile, writeFile } from 'node:fs/promises';
 import { dirname, extname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = dirname(fileURLToPath(import.meta.url));
 const port = Number(process.env.PORT || 3000);
+const classroomSessionFile = resolve(root, '.classroom-session.json');
 const roomPosts = [];
 const classMembers = new Map();
 const defaultTopic = { title: '학교의 휴대전화 일괄 수거는 정당한가?', scenario: '학교의 수업 집중과 생활지도를 위한 휴대전화 보관이 학생의 사생활·표현의 자유와 어떻게 균형을 이루어야 하는지 토론합니다.' };
-let classTopic = { ...defaultTopic, updatedAt: Date.now() };
+let classSessionId = globalThis.crypto.randomUUID();
+let classTopic = { ...defaultTopic, sources: [], updatedAt: Date.now() };
+try {
+  const savedSession = JSON.parse(await readFile(classroomSessionFile, 'utf8'));
+  if (typeof savedSession.classSessionId === 'string') classSessionId = savedSession.classSessionId;
+  if (typeof savedSession.topic?.title === 'string' && typeof savedSession.topic?.scenario === 'string') classTopic = { ...classTopic, ...savedSession.topic };
+} catch {}
 let constitutionCache;
 let lawApiState = 'not_checked';
 let cachedLawKey = '';
@@ -17,6 +24,10 @@ const runSourceRequest = createQueueGate(10, 120);
 const sourceCache = new Map();
 const statuteCache = new Map();
 const studentRequestTimes = new Map();
+
+async function persistClassroomState() {
+  await writeFile(classroomSessionFile, JSON.stringify({ classSessionId, topic: classTopic }), { encoding: 'utf8', mode: 0o600 });
+}
 
 function createQueueGate(limit, maxWaiting) {
   let active = 0;
@@ -447,7 +458,7 @@ async function handleApi(request, response, url) {
       return json(response, 502, { error: '주제별 문제를 만들지 못했어요. 기본 연습 문제로 이어갈게요.' });
     }
   }
-  if (request.method === 'GET' && url.pathname === '/api/class/topic') return json(response, 200, { topic: classTopic });
+  if (request.method === 'GET' && url.pathname === '/api/class/topic') return json(response, 200, { topic: classTopic, sessionId: classSessionId });
   if (request.method === 'POST' && url.pathname === '/api/class/topic/suggest') {
     try {
       const body = await readBody(request, 10000);
@@ -512,16 +523,41 @@ async function handleApi(request, response, url) {
       const changed = title !== classTopic.title || scenario !== classTopic.scenario;
       if (changed) roomPosts.length = 0;
       classTopic = { title, scenario, sources, updatedAt: Date.now() };
-      return json(response, 200, { topic: classTopic });
+      await persistClassroomState();
+      return json(response, 200, { topic: classTopic, sessionId: classSessionId });
     } catch {
       return json(response, 400, { error: '주제 저장에 실패했습니다.' });
+    }
+  }
+  if (request.method === 'POST' && url.pathname === '/api/class/reset') {
+    try {
+      const body = await readBody(request, 3000);
+      const title = String(body.title || '').trim().slice(0, 160);
+      const scenario = String(body.scenario || '').trim().slice(0, 700);
+      if (!isConstitutionalTopic(title, scenario)) return json(response, 400, { error: '새 토론 주제를 먼저 입력해 주세요.' });
+      const sources = (Array.isArray(body.sources) ? body.sources : []).map(source => {
+        let sourceUrl = '';
+        try { sourceUrl = new URL(String(source.url || '')).href; } catch {}
+        if (!sourceUrl.startsWith('https://www.law.go.kr/') && !sourceUrl.startsWith('https://www.easylaw.go.kr/')) return null;
+        return { title: String(source.title || '').slice(0, 120), url: sourceUrl, excerpt: String(source.excerpt || '').slice(0, 400), id: String(source.id || '').slice(0, 60) };
+      }).filter(Boolean).slice(0, 6);
+      const newTopic = { title, scenario, sources, updatedAt: Date.now() };
+      const newSessionId = globalThis.crypto.randomUUID();
+      await writeFile(classroomSessionFile, JSON.stringify({ classSessionId: newSessionId, topic: newTopic }), { encoding: 'utf8', mode: 0o600 });
+      classTopic = newTopic;
+      classSessionId = newSessionId;
+      roomPosts.length = 0;
+      classMembers.clear();
+      return json(response, 200, { topic: classTopic, sessionId: classSessionId });
+    } catch {
+      return json(response, 400, { error: '새 수업을 시작하지 못했어요. 다시 시도해 주세요.' });
     }
   }
   if (request.method === 'GET' && url.pathname === '/api/room') return json(response, 200, { posts: roomPosts.slice(-80) });
   if (request.method === 'GET' && url.pathname === '/api/class/board') {
     const name = url.searchParams.get('name');
     if (name) getOrCreateClassMember(name, url.searchParams.get('persona'));
-    return json(response, 200, getClassBoard());
+    return json(response, 200, { ...getClassBoard(), sessionId: classSessionId });
   }
   if (request.method === 'POST' && url.pathname === '/api/class/support') {
     try {

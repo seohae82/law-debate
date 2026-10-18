@@ -138,6 +138,7 @@ const constitutionCardsData = [
 const defaultClassTopic = { title: '학교의 휴대전화 일괄 수거는 정당한가?', scenario: '학교의 수업 집중과 생활지도를 위한 휴대전화 보관이 학생의 사생활·표현의 자유와 어떻게 균형을 이루어야 하는지 토론합니다.', sources: [] };
 let classTopic = { ...defaultClassTopic };
 let classTopicLoaded = false;
+let browserClassSessionId = localStorage.getItem('courtroom-class-session') || '';
 let topicFormDirty = false;
 let topicDraftSources = [];
 let topicSuggestionPromise = null;
@@ -694,9 +695,53 @@ function hasConstitutionTopicTerms(title, scenario) {
   return String(title).trim().length >= 6 && /헌법|권리|기본권|평등|표현|사생활|개인정보|교육|학교|학생|휴대|자유|존엄|차별|제한|인권|공익|노동|종교|언론|집회|양심|참정|선거|정당|대통령|국회|탄핵|공직|권력분립|영토|재산|주거|신체|보건|환경/i.test(`${title} ${scenario}`);
 }
 
-function applyClassTopic(topic) {
+function clearLocalClassSession() {
+  const activePersona = normalizePersona(state.persona);
+  profiles = Object.fromEntries(Object.entries(profiles).map(([name, profile]) => [name, { ...createDefaultState(), persona: normalizePersona(profile?.persona) }]));
+  state = { ...createDefaultState(), persona: activePersona };
+  persist();
+  roomPosts = [];
+  classMembers = [];
+  latestClassBoard = { members: [], totals: { students: 0, presentations: 0, participations: 0 } };
+  clearTimeout(idleTimer);
+  if (gameStarted) {
+    gameStarted = false;
+    clearInterval(gameTimerId);
+    clearTimeout(gameTransitionId);
+    cancelAnimationFrame(flightAnimationId);
+    document.querySelector('#gameSession').hidden = true;
+    document.querySelector('#gameIntro').hidden = false;
+  }
+  if (tetrisActive) {
+    tetrisActive = false;
+    cancelAnimationFrame(tetrisFrame);
+    document.querySelector('#tetrisOverlay').classList.remove('hidden');
+    document.querySelector('#tetrisOverlayTitle').textContent = '새 수업이 시작됐어요.';
+    document.querySelector('#tetrisOverlayText').textContent = '새 주제에서 조항 블록을 다시 쌓아보세요.';
+  }
+  document.querySelector('#noteModal').classList.remove('open');
+  document.querySelector('#presentationModal').classList.remove('open');
+  document.querySelector('#constitutionModal').classList.remove('open');
+  document.querySelector('#roomInput').value = '';
+  replyTo = '';
+  for (let index = localStorage.length - 1; index >= 0; index -= 1) {
+    const key = localStorage.key(index);
+    if (key?.startsWith('courtroom-law-game-best')) localStorage.removeItem(key);
+  }
+}
+
+function applyClassTopic(topic, sessionId = '') {
   const firstLoad = !classTopicLoaded;
+  const sessionChanged = Boolean(browserClassSessionId && sessionId && browserClassSessionId !== sessionId);
   const changed = topic.title !== classTopic.title || topic.scenario !== classTopic.scenario;
+  if (sessionId) {
+    browserClassSessionId = sessionId;
+    localStorage.setItem('courtroom-class-session', sessionId);
+  }
+  if (sessionChanged) {
+    topicFormDirty = false;
+    clearLocalClassSession();
+  }
   classTopic = { title: topic.title || defaultClassTopic.title, scenario: topic.scenario || '', sources: topic.sources || [] };
   topicDraftSources = classTopic.sources;
   const titleInput = document.querySelector('#topicTitle');
@@ -711,7 +756,16 @@ function applyClassTopic(topic) {
   document.querySelector('#sideCaseContext').textContent = classTopic.scenario;
   document.querySelector('.room-panel .panel-caption').textContent = `“${classTopic.title}”에 대한 발언을 AI가 확인한 뒤 친구들과 공유해요.`;
   renderTopicSources(topicDraftSources);
-  if (changed) {
+  if (sessionChanged) {
+    state.stage = 'start';
+    state.messages = [];
+    persist();
+    renderProgress();
+    renderStage();
+    renderChat();
+    document.querySelector('#topicStatus').classList.remove('error');
+    document.querySelector('#topicStatus').textContent = '새 수업이 시작됐어요. 이전 발표·질문·토론 기록을 초기화했습니다.';
+  } else if (changed) {
     state.stage = 'start';
     state.messages = [];
     persist();
@@ -730,7 +784,7 @@ async function pollClassTopic() {
     const response = await fetch('/api/class/topic', { cache: 'no-store' });
     if (!response.ok) return;
     const data = await response.json();
-    applyClassTopic(data.topic);
+    applyClassTopic(data.topic, data.sessionId);
   } catch {}
 }
 
@@ -814,11 +868,56 @@ async function saveClassTopic() {
     const result = await response.json();
     if (!response.ok) throw new Error(result.error || '주제를 저장하지 못했어요.');
     topicFormDirty = false;
-    applyClassTopic(result.topic);
+    applyClassTopic(result.topic, result.sessionId);
     status.classList.remove('error');
     status.textContent = '새 주제가 학급 전체와 토론 코치에 적용됐어요.';
     toast('오늘의 토론 주제를 학급에 적용했어요.');
   } catch (error) {
+    status.classList.add('error');
+    status.textContent = error.message;
+  } finally {
+    button.disabled = false;
+  }
+}
+
+async function startNewClass() {
+  const title = document.querySelector('#topicTitle').value.trim();
+  let scenario = document.querySelector('#topicScenario').value.trim();
+  if (topicSuggestionPromise) {
+    const generated = await topicSuggestionPromise;
+    topicSuggestionPromise = null;
+    if (!generated && !scenario) return;
+    scenario = document.querySelector('#topicScenario').value.trim();
+  }
+  if (!hasConstitutionTopicTerms(title, scenario)) {
+    document.querySelector('#topicStatus').classList.add('error');
+    document.querySelector('#topicStatus').textContent = '새 수업을 시작하기 전에 헌법 토론 주제를 정해 주세요.';
+    return;
+  }
+  if (!scenario) {
+    topicSuggestionPromise = requestTopicSuggestion(title, '', false);
+    const generated = await topicSuggestionPromise;
+    topicSuggestionPromise = null;
+    if (!generated) return;
+    scenario = document.querySelector('#topicScenario').value.trim();
+  }
+  const approved = window.confirm('새 수업을 시작하면 모든 학생의 발표 체크·토론 글·생각 노트와 교사 도움 요청이 초기화됩니다. 별명과 출생 띠는 유지됩니다. 새 수업을 시작할까요?');
+  if (!approved) return;
+  const button = document.querySelector('#startNewClassButton');
+  button.disabled = true;
+  try {
+    const response = await fetch('/api/class/reset', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title, scenario, sources: topicDraftSources })
+    });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error || '새 수업을 시작하지 못했어요.');
+    applyClassTopic(result.topic, result.sessionId);
+    await Promise.all([pollClassBoard(), pollRoom()]);
+    toast('새 토론 수업을 시작했어요. 학생들이 주제를 확인하고 다시 참여할 수 있습니다.');
+  } catch (error) {
+    const status = document.querySelector('#topicStatus');
     status.classList.add('error');
     status.textContent = error.message;
   } finally {
@@ -1315,6 +1414,7 @@ document.querySelector('#applyProfile').addEventListener('click', () => {
 document.querySelector('#profileName').addEventListener('input', updateProfileButton);
 document.querySelector('#personaSelect').addEventListener('change', updateProfileButton);
 document.querySelector('#saveTopicButton').addEventListener('click', saveClassTopic);
+document.querySelector('#startNewClassButton').addEventListener('click', startNewClass);
 document.querySelector('#topicTitle').addEventListener('input', () => { topicFormDirty = true; });
 document.querySelector('#topicScenario').addEventListener('input', () => { topicFormDirty = true; });
 document.querySelector('#suggestTopicButton').addEventListener('click', () => {
