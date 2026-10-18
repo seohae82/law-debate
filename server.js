@@ -192,19 +192,20 @@ function recordClassActivity(name, persona, type, details = {}) {
     const slots = new Set(member.presentationSlots);
     if (details.action === 'check' && !slots.has(slot)) {
       slots.add(slot);
-      member.activityTrail.push({ type: 'presentation', label: `발표 ${slot + 1} 기록`, at: Date.now() });
+      member.activityTrail.push({ type: 'presentation', label: `발표 ${slot + 1} 기록`, slot, text: String(details.text || '').slice(0, 700), stage: String(details.stage || ''), topicTitle: classTopic.title, at: Date.now() });
     } else if (details.action === 'uncheck' && slots.has(slot)) {
       slots.delete(slot);
-      member.activityTrail.push({ type: 'edit', label: `발표 ${slot + 1} 체크 수정`, at: Date.now() });
+      member.activityTrail = member.activityTrail.filter(event => !(event.type === 'presentation' && event.slot === slot));
+      member.activityTrail.push({ type: 'edit', label: `발표 ${slot + 1} 체크 수정`, topicTitle: classTopic.title, at: Date.now() });
     }
     member.presentationSlots = [...slots].sort((a, b) => a - b);
     member.presentations = member.presentationSlots.length;
   } else {
     member.participations += 1;
     const labels = { coach: '코치에게 질문', 'public-debate': '공개 토론 발언', 'constitutional-game': '조항 비행 게임', 'constitutional-tetris': '조항 테트리스' };
-    member.activityTrail.push({ type: 'participation', label: labels[details.source] || '토론 참여', at: Date.now() });
+    member.activityTrail.push({ type: 'participation', label: labels[details.source] || '토론 참여', text: String(details.text || '').slice(0, 700), feedback: String(details.feedback || '').slice(0, 700), stage: String(details.stage || ''), topicTitle: classTopic.title, at: Date.now() });
   }
-  member.activityTrail = member.activityTrail.slice(-12);
+  member.activityTrail = member.activityTrail.slice(-30);
   member.growthPoints = member.presentations * 3 + member.participations;
   member.level = Math.floor(member.growthPoints / 3);
   member.updatedAt = Date.now();
@@ -343,6 +344,8 @@ async function handleApi(request, response, url) {
       const member = getOrCreateClassMember(body.name, body.persona);
       member.helpRequested = body.action === 'request';
       member.supportUpdatedAt = Date.now();
+      member.activityTrail.push({ type: 'support', label: body.action === 'request' ? '교사 도움 요청' : '교사 지원 완료', topicTitle: classTopic.title, at: member.supportUpdatedAt });
+      member.activityTrail = member.activityTrail.slice(-30);
       return json(response, 200, { member, ...getClassBoard() });
     } catch {
       return json(response, 400, { error: 'invalid_support_request' });
@@ -357,7 +360,7 @@ async function handleApi(request, response, url) {
       }
       const slot = Number(body.slot);
       if (body.type !== 'presentation' || !['check', 'uncheck'].includes(body.action) || !Number.isInteger(slot) || slot < 0 || slot > 2) return json(response, 400, { error: 'unsupported_activity' });
-      const member = recordClassActivity(body.name, body.persona, 'presentation', { slot, action: body.action });
+      const member = recordClassActivity(body.name, body.persona, 'presentation', { slot, action: body.action, text: body.text, stage: body.stage });
       return json(response, 201, { member, ...getClassBoard() });
     } catch {
       return json(response, 400, { error: 'invalid_activity' });
@@ -378,7 +381,10 @@ async function handleApi(request, response, url) {
         at: Date.now()
       };
       if (!post.body) return json(response, 400, { error: 'empty_message' });
-      const member = recordClassActivity(post.name, body.persona, 'participation', { source: 'public-debate' });
+      const member = recordClassActivity(post.name, body.persona, 'participation', { source: 'public-debate', text: post.body });
+      post.persona = member.persona;
+      post.presentations = member.presentations;
+      post.level = member.level;
       roomPosts.push(post);
       if (roomPosts.length > 200) roomPosts.splice(0, roomPosts.length - 200);
       return json(response, 201, { post, member });
@@ -396,7 +402,7 @@ async function handleApi(request, response, url) {
         ? { number: Number(body.articleCard.number), title: String(body.articleCard.title || '').slice(0, 100), summary: String(body.articleCard.summary || '').slice(0, 300) }
         : null;
       const result = await generateFeedback({ message, history, stage: String(body.stage || 'start').slice(0, 12), position: String(body.position || '').slice(0, 24), topic: classTopic, articleCard: card });
-      if (result.onTopic) recordClassActivity(body.name, body.persona, 'participation', { source: 'coach' });
+      if (result.onTopic) recordClassActivity(body.name, body.persona, 'participation', { source: 'coach', text: message, feedback: result.feedback, stage: body.stage });
       return json(response, 200, result);
     } catch (error) {
       const status = String(error.message).startsWith('upstage_') ? 502 : error.message === 'too_large' ? 413 : 502;

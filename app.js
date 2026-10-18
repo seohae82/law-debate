@@ -560,7 +560,38 @@ function renderSideRoster(board) {
       chip.textContent = '출발을 기다리는 중';
       events.append(chip);
     }
-    body.append(name, counts, events);
+    const history = document.createElement('details');
+    history.className = 'side-history';
+    const summary = document.createElement('summary');
+    summary.textContent = `상호작용 기록 ${member.activityTrail?.length || 0}개 보기`;
+    const records = document.createElement('div');
+    records.className = 'side-record-list';
+    (member.activityTrail || []).slice().reverse().forEach(activity => {
+      const record = document.createElement('article');
+      record.className = 'side-record';
+      const heading = document.createElement('strong');
+      heading.textContent = `${activity.label} · ${new Date(activity.at).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}`;
+      record.append(heading);
+      if (activity.text) {
+        const text = document.createElement('p');
+        text.textContent = activity.text;
+        record.append(text);
+      }
+      if (activity.feedback) {
+        const feedback = document.createElement('p');
+        feedback.className = 'side-coach-feedback';
+        feedback.textContent = `토론 코치: ${activity.feedback}`;
+        record.append(feedback);
+      }
+      if (activity.topicTitle) {
+        const topic = document.createElement('small');
+        topic.textContent = `주제: ${activity.topicTitle}`;
+        record.append(topic);
+      }
+      records.append(record);
+    });
+    history.append(summary, records);
+    body.append(name, counts, events, history);
     row.append(art, body);
     roster.append(row);
   });
@@ -778,10 +809,10 @@ function openPresentationModal(slot = nextPresentationSlot()) {
   if (slot === undefined) { toast('발표 3회를 모두 기록했어요. 체크를 다시 눌러 수정할 수 있습니다.'); return; }
   presentationSlot = slot;
   document.querySelector('#presentationTitle').textContent = `${slot + 1}번째 발표 기록`;
-  document.querySelector('#presentationText').value = '';
+  ['#presentationClaim', '#presentationReason', '#presentationExample'].forEach(selector => { document.querySelector(selector).value = ''; });
   document.querySelector('#presentationError').textContent = '';
   document.querySelector('#presentationModal').classList.add('open');
-  document.querySelector('#presentationText').focus();
+  document.querySelector('#presentationClaim').focus();
 }
 
 async function togglePresentation(slot) {
@@ -820,15 +851,20 @@ async function togglePresentation(slot) {
 }
 
 async function savePresentation() {
-  const text = document.querySelector('#presentationText').value.trim();
-  const length = Array.from(text).length;
+  const fields = [
+    { label: '주장', selector: '#presentationClaim', text: document.querySelector('#presentationClaim').value.trim() },
+    { label: '이유·헌법 근거', selector: '#presentationReason', text: document.querySelector('#presentationReason').value.trim() },
+    { label: '예시·반대 의견', selector: '#presentationExample', text: document.querySelector('#presentationExample').value.trim() }
+  ];
   const error = document.querySelector('#presentationError');
-  if (length <= 10 || presentationSlot === null) {
-    error.textContent = length <= 10 ? `발표 내용을 11자 이상 적어주세요. (현재 ${length}자)` : '발표 순서를 다시 확인해 주세요.';
-    document.querySelector('#presentationText').focus();
+  const shortField = fields.find(field => Array.from(field.text).length <= 10);
+  if (shortField || presentationSlot === null) {
+    error.textContent = shortField ? `${shortField.label}을(를) 11자 이상 구체적으로 적어주세요. 짧은 글은 발표로 기록되지 않아요.` : '발표 순서를 다시 확인해 주세요.';
+    document.querySelector(shortField?.selector || '#presentationClaim').focus();
     return;
   }
   error.textContent = '';
+  const text = `주장: ${fields[0].text}\n이유·헌법 근거: ${fields[1].text}\n예시·반대 의견: ${fields[2].text}`;
   const slot = presentationSlot;
   const at = Date.now();
   const id = `p-${at}-${slot}`;
@@ -843,7 +879,7 @@ async function savePresentation() {
     const response = await fetch('/api/class/activity', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ type: 'presentation', action: 'check', slot, name: activeStudent, persona: state.persona })
+      body: JSON.stringify({ type: 'presentation', action: 'check', slot, name: activeStudent, persona: state.persona, text, stage: state.stage })
     });
     if (!response.ok) throw new Error('class_board_unavailable');
     await pollClassBoard();
@@ -1052,7 +1088,13 @@ function renderRoom() {
   const byId = new Map(roomPosts.map(post => [post.id, post]));
   roomPosts.forEach(post => {
     const card = document.createElement('article');
-    card.className = `room-post ${post.replyTo ? 'reply' : ''}`;
+    card.className = `room-post ${post.name === activeStudent ? 'mine' : ''} ${post.replyTo ? 'reply' : ''}`;
+    const avatar = document.createElement('div');
+    avatar.className = 'room-avatar';
+    avatar.style.background = `${avatarColor(post.persona || 'rat', post.presentations || 0)}35`;
+    avatar.innerHTML = characterSvg(post.persona || 'rat', post.level || 0, post.presentations || 0);
+    const content = document.createElement('div');
+    content.className = 'room-content';
     const meta = document.createElement('div');
     meta.className = 'post-meta';
     const side = document.createElement('span');
@@ -1063,13 +1105,13 @@ function renderRoom() {
     const time = document.createElement('span');
     time.textContent = new Date(post.at).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
     meta.append(side, name, time);
-    card.append(meta);
+    content.append(meta);
     const parent = byId.get(post.replyTo);
     if (parent) {
       const context = document.createElement('div');
       context.className = 'reply-context';
       context.textContent = `${parent.name}의 발언: ${parent.body.slice(0, 110)}`;
-      card.append(context);
+      content.append(context);
     }
     const body = document.createElement('div');
     body.className = 'post-body';
@@ -1086,7 +1128,8 @@ function renderRoom() {
       notice.onclick = () => { replyTo = ''; notice.classList.remove('show'); };
       document.querySelector('#roomInput').focus();
     });
-    card.append(body, reply);
+    content.append(body, reply);
+    card.append(avatar, content);
     feed.append(card);
   });
   if (lastRoomPost) feed.scrollTop = feed.scrollHeight;
