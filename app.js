@@ -868,6 +868,8 @@ function thoughtTypeLabel(event) {
   if (event.type === 'encouragement') return '참여 응원';
   if (event.type === 'game-answer') return '헌법 조항 게임';
   if (event.type === 'game-complete') return '조항 탐험 기록';
+  if (event.type === 'tetris-line') return '헌법 블록 줄 완성';
+  if (event.type === 'tetris-complete') return '헌법 블록 게임';
   if (event.type === 'public-debate') return `학급 토론 · ${event.side || '발언'}`;
   return '생각 기록';
 }
@@ -965,11 +967,11 @@ function renderThoughtNote() {
     if (!ids.has(id)) events.push({ id, type: 'public-debate', text: post.body, side: post.side, at: post.at, stage: 'middle' });
   });
   events.sort((a, b) => (a.at || 0) - (b.at || 0));
-  const contributions = events.filter(event => ['presentation', 'question', 'public-debate', 'game-answer'].includes(event.type));
+  const contributions = events.filter(event => ['presentation', 'question', 'public-debate', 'game-answer', 'tetris-line'].includes(event.type));
   const counts = [
     ['발표', events.filter(event => event.type === 'presentation').length],
-    ['내 발언·질문', events.filter(event => ['question', 'public-debate', 'game-answer'].includes(event.type)).length],
-    ['코치·게임 피드백', events.filter(event => ['coach', 'encouragement', 'game-complete'].includes(event.type)).length]
+    ['내 발언·질문', events.filter(event => ['question', 'public-debate', 'game-answer', 'tetris-line'].includes(event.type)).length],
+    ['코치·게임 피드백', events.filter(event => ['coach', 'encouragement', 'game-complete', 'tetris-complete'].includes(event.type)).length]
   ];
   const overview = document.querySelector('#thoughtOverview');
   overview.innerHTML = '';
@@ -1461,6 +1463,282 @@ function handleFlightKeys(event) {
 document.addEventListener('keydown', handleFlightKeys);
 document.querySelector('#gameStart').addEventListener('click', startConstitutionGame);
 document.querySelector('#gameAgain').addEventListener('click', startConstitutionGame);
+
+const tetrisColumns = 10;
+const tetrisRows = 18;
+const tetrisCell = 30;
+const tetrisGoal = 6;
+const tetrisShapes = [
+  [[1, 1, 1, 1]],
+  [[1, 1], [1, 1]],
+  [[0, 1, 0], [1, 1, 1]],
+  [[0, 1, 1], [1, 1, 0]],
+  [[1, 1, 0], [0, 1, 1]],
+  [[1, 0, 0], [1, 1, 1]],
+  [[0, 0, 1], [1, 1, 1]]
+];
+const tetrisColorSet = ['#d87958', '#d0a84f', '#588ca0', '#70936a', '#8970a7', '#b9677f'];
+const tetrisCanvas = document.querySelector('#constitutionTetris');
+const tetrisContext = tetrisCanvas.getContext('2d');
+let tetrisBoard = [];
+let tetrisPiece = null;
+let tetrisArticlePool = [];
+let tetrisArticleCursor = 0;
+let tetrisLastClearedArticles = [];
+let tetrisActive = false;
+let tetrisFrame = 0;
+let tetrisLastFrame = 0;
+let tetrisDropCounter = 0;
+let tetrisScore = 0;
+let tetrisLines = 0;
+let tetrisTimeLeft = 90;
+
+function getTetrisArticlesForTopic() {
+  const context = `${classTopic.title} ${classTopic.scenario}`;
+  const numbers = [];
+  if (/사생활|개인정보|휴대전화|스마트폰|촬영/.test(context)) numbers.push(17, 12);
+  if (/표현|의견|발언|게시/.test(context)) numbers.push(21);
+  if (/교육|급식|학생|수업|학교/.test(context)) numbers.push(31);
+  if (/평등|차별|기회/.test(context)) numbers.push(11);
+  if (/존엄|행복|자유|인권/.test(context)) numbers.push(10);
+  if (/제한|규칙|보관|수거|공익/.test(context)) numbers.push(37);
+  for (const number of [10, 11, 17, 21, 31, 37]) if (numbers.length < 4) numbers.push(number);
+  return [...new Set(numbers)].map(number => constitutionCardsData.find(card => card[0] === number)).filter(Boolean);
+}
+
+function updateTetrisStats() {
+  document.querySelector('#tetrisScore').textContent = `점수 ${tetrisScore}`;
+  document.querySelector('#tetrisLines').textContent = `줄 ${tetrisLines} / ${tetrisGoal}`;
+  document.querySelector('#tetrisTimer').textContent = `${Math.ceil(tetrisTimeLeft)}초`;
+}
+
+function tetrisArticleInfo(article) {
+  document.querySelector('#tetrisClauseTitle').textContent = `제${article[0]}조 · ${article[1]}`;
+  document.querySelector('#tetrisClauseSummary').textContent = article[2];
+}
+
+function collisionTetris(matrix, x, y) {
+  for (let row = 0; row < matrix.length; row += 1) {
+    for (let col = 0; col < matrix[row].length; col += 1) {
+      if (!matrix[row][col]) continue;
+      const boardX = x + col;
+      const boardY = y + row;
+      if (boardX < 0 || boardX >= tetrisColumns || boardY >= tetrisRows) return true;
+      if (boardY >= 0 && tetrisBoard[boardY][boardX]) return true;
+    }
+  }
+  return false;
+}
+
+function spawnTetrisPiece() {
+  if (tetrisArticleCursor >= tetrisArticlePool.length) {
+    tetrisArticlePool = shuffled(getTetrisArticlesForTopic());
+    tetrisArticleCursor = 0;
+  }
+  const shape = tetrisShapes[Math.floor(Math.random() * tetrisShapes.length)];
+  const article = tetrisArticlePool[tetrisArticleCursor++];
+  tetrisPiece = {
+    matrix: shape.map(row => [...row]),
+    x: Math.floor((tetrisColumns - shape[0].length) / 2),
+    y: 0,
+    article
+  };
+  tetrisArticleInfo(article);
+  if (collisionTetris(tetrisPiece.matrix, tetrisPiece.x, tetrisPiece.y)) finishTetris(false);
+}
+
+function drawTetrisBlock(x, y, articleNumber) {
+  const color = tetrisColorSet[articleNumber % tetrisColorSet.length];
+  const left = x * tetrisCell + 2;
+  const top = y * tetrisCell + 2;
+  tetrisContext.fillStyle = color;
+  tetrisContext.fillRect(left, top, tetrisCell - 4, tetrisCell - 4);
+  tetrisContext.strokeStyle = '#f8f4e8';
+  tetrisContext.lineWidth = 1;
+  tetrisContext.strokeRect(left + .5, top + .5, tetrisCell - 5, tetrisCell - 5);
+  tetrisContext.fillStyle = '#fffefa';
+  tetrisContext.font = 'bold 9px sans-serif';
+  tetrisContext.textAlign = 'center';
+  tetrisContext.textBaseline = 'middle';
+  tetrisContext.fillText(String(articleNumber), left + (tetrisCell - 4) / 2, top + (tetrisCell - 4) / 2);
+}
+
+function drawTetrisBoard() {
+  tetrisContext.fillStyle = '#0e1b2b';
+  tetrisContext.fillRect(0, 0, tetrisCanvas.width, tetrisCanvas.height);
+  tetrisContext.strokeStyle = '#24364a';
+  tetrisContext.lineWidth = 1;
+  for (let row = 0; row < tetrisRows; row += 1) {
+    for (let col = 0; col < tetrisColumns; col += 1) {
+      tetrisContext.strokeRect(col * tetrisCell, row * tetrisCell, tetrisCell, tetrisCell);
+      const block = tetrisBoard[row]?.[col];
+      if (block) drawTetrisBlock(col, row, block.number);
+    }
+  }
+  if (tetrisPiece) {
+    tetrisPiece.matrix.forEach((line, row) => line.forEach((cell, col) => {
+      if (cell && tetrisPiece.y + row >= 0) drawTetrisBlock(tetrisPiece.x + col, tetrisPiece.y + row, tetrisPiece.article[0]);
+    }));
+  }
+}
+
+function rotateTetrisPiece() {
+  if (!tetrisActive || !tetrisPiece) return;
+  const rotated = tetrisPiece.matrix[0].map((_, index) => tetrisPiece.matrix.map(row => row[index]).reverse());
+  for (const offset of [0, -1, 1, -2, 2]) {
+    if (!collisionTetris(rotated, tetrisPiece.x + offset, tetrisPiece.y)) {
+      tetrisPiece.matrix = rotated;
+      tetrisPiece.x += offset;
+      drawTetrisBoard();
+      return;
+    }
+  }
+}
+
+function moveTetrisPiece(dx, dy, pointsForDrop = false) {
+  if (!tetrisActive || !tetrisPiece) return false;
+  if (!collisionTetris(tetrisPiece.matrix, tetrisPiece.x + dx, tetrisPiece.y + dy)) {
+    tetrisPiece.x += dx;
+    tetrisPiece.y += dy;
+    if (pointsForDrop) { tetrisScore += 1; updateTetrisStats(); }
+    drawTetrisBoard();
+    return true;
+  }
+  if (dy > 0) lockTetrisPiece();
+  return false;
+}
+
+function hardDropTetrisPiece() {
+  if (!tetrisActive || !tetrisPiece) return;
+  let distance = 0;
+  while (!collisionTetris(tetrisPiece.matrix, tetrisPiece.x, tetrisPiece.y + 1)) {
+    tetrisPiece.y += 1;
+    distance += 1;
+  }
+  tetrisScore += distance * 2;
+  updateTetrisStats();
+  lockTetrisPiece();
+}
+
+function lockTetrisPiece() {
+  const article = tetrisPiece.article;
+  for (let row = 0; row < tetrisPiece.matrix.length; row += 1) {
+    for (let col = 0; col < tetrisPiece.matrix[row].length; col += 1) {
+      if (!tetrisPiece.matrix[row][col]) continue;
+      const y = tetrisPiece.y + row;
+      if (y < 0) { finishTetris(false); return; }
+      tetrisBoard[y][tetrisPiece.x + col] = { number: article[0] };
+    }
+  }
+  const clearedRows = tetrisBoard.filter(row => row.every(Boolean));
+  if (clearedRows.length) {
+    const articleNumbers = [...new Set(clearedRows.flat().map(block => block.number))];
+    const clearedArticles = articleNumbers.map(number => constitutionCardsData.find(card => card[0] === number)).filter(Boolean);
+    const keepRows = tetrisBoard.filter(row => !row.every(Boolean));
+    while (keepRows.length < tetrisRows) keepRows.unshift(Array(tetrisColumns).fill(null));
+    tetrisBoard = keepRows;
+    tetrisLines += clearedRows.length;
+    tetrisScore += [0, 100, 300, 500, 800][clearedRows.length] || clearedRows.length * 200;
+    tetrisLastClearedArticles = clearedArticles;
+    document.querySelector('#tetrisFeedback').textContent = `${clearedRows.length}줄 완성! ${clearedArticles.map(item => `제${item[0]}조 ${item[1]}`).join(' · ')} 조항 블록을 정리했어요.`;
+    document.querySelector('#tetrisAskCoach').disabled = false;
+    const at = Date.now();
+    state.thoughtHistory.push({ id: `tetris-line-${at}`, type: 'tetris-line', text: `헌법 조항 블록 게임에서 ${clearedRows.length}줄을 지웠어요: ${clearedArticles.map(item => `제${item[0]}조 ${item[1]}`).join(', ')}.`, at, stage: state.stage, sources: [{ title: '대한민국헌법 · 국가법령정보센터', url: 'https://www.law.go.kr/법령/대한민국헌법' }] });
+    persist();
+    updateTetrisStats();
+    if (tetrisLines >= tetrisGoal) { drawTetrisBoard(); finishTetris(true); return; }
+  }
+  spawnTetrisPiece();
+  drawTetrisBoard();
+}
+
+function startTetris() {
+  if (!profileReady) { toast('블록 점수를 기록하려면 먼저 별명을 설정해 주세요.'); document.querySelector('#profileName').focus(); return; }
+  if (tetrisFrame) cancelAnimationFrame(tetrisFrame);
+  tetrisBoard = Array.from({ length: tetrisRows }, () => Array(tetrisColumns).fill(null));
+  tetrisArticlePool = shuffled(getTetrisArticlesForTopic());
+  tetrisArticleCursor = 0;
+  tetrisLastClearedArticles = [];
+  tetrisScore = 0;
+  tetrisLines = 0;
+  tetrisTimeLeft = 90;
+  tetrisDropCounter = 0;
+  tetrisLastFrame = performance.now();
+  tetrisActive = true;
+  document.querySelector('#tetrisOverlay').classList.add('hidden');
+  document.querySelector('#tetrisFeedback').textContent = '블록을 움직여 가로줄을 완성해보세요.';
+  document.querySelector('#tetrisAskCoach').disabled = true;
+  document.querySelector('#tetrisStart').textContent = '다시 도전';
+  updateTetrisStats();
+  spawnTetrisPiece();
+  drawTetrisBoard();
+  tetrisCanvas.focus({ preventScroll: true });
+  tetrisFrame = requestAnimationFrame(tetrisLoop);
+}
+
+function tetrisLoop(now) {
+  if (!tetrisActive) return;
+  const delta = Math.min(now - tetrisLastFrame, 80);
+  tetrisLastFrame = now;
+  tetrisTimeLeft = Math.max(0, tetrisTimeLeft - delta / 1000);
+  tetrisDropCounter += delta;
+  const speed = Math.max(130, 720 - Math.floor(tetrisLines / 2) * 70);
+  if (tetrisDropCounter >= speed) {
+    tetrisDropCounter = 0;
+    moveTetrisPiece(0, 1);
+  }
+  updateTetrisStats();
+  drawTetrisBoard();
+  if (tetrisTimeLeft <= 0) { finishTetris(false); return; }
+  tetrisFrame = requestAnimationFrame(tetrisLoop);
+}
+
+async function finishTetris(won) {
+  if (!tetrisActive) return;
+  tetrisActive = false;
+  cancelAnimationFrame(tetrisFrame);
+  drawTetrisBoard();
+  const overlay = document.querySelector('#tetrisOverlay');
+  overlay.classList.remove('hidden');
+  document.querySelector('#tetrisOverlayTitle').textContent = won ? '조항 줄 완성! 멋지게 쌓았어요.' : '게임 종료! 다음 판에 다시 도전해요.';
+  document.querySelector('#tetrisOverlayText').textContent = `${tetrisScore}점 · ${tetrisLines}줄을 완성했어요. 블록에 담긴 조항을 생각 노트에서 다시 볼 수 있어요.`;
+  const at = Date.now();
+  state.thoughtHistory.push({ id: `tetris-complete-${at}`, type: 'tetris-complete', text: `헌법 조항 블록 게임 완료: ${tetrisScore}점, ${tetrisLines}줄.`, at, stage: state.stage });
+  persist();
+  try {
+    const response = await fetch('/api/class/activity', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type: 'participation', source: 'constitutional-tetris', name: activeStudent, persona: state.persona })
+    });
+    if (response.ok) await pollClassBoard();
+  } catch {}
+}
+
+function handleTetrisKeys(event) {
+  if (!tetrisActive || event.altKey || event.ctrlKey || event.metaKey || event.target.matches('input, textarea, select')) return;
+  if (event.key === 'ArrowLeft') { event.preventDefault(); moveTetrisPiece(-1, 0); }
+  else if (event.key === 'ArrowRight') { event.preventDefault(); moveTetrisPiece(1, 0); }
+  else if (event.key === 'ArrowDown') { event.preventDefault(); moveTetrisPiece(0, 1, true); }
+  else if (event.key === 'ArrowUp') { event.preventDefault(); rotateTetrisPiece(); }
+  else if (event.code === 'Space') { event.preventDefault(); hardDropTetrisPiece(); }
+}
+
+document.addEventListener('keydown', handleTetrisKeys);
+document.querySelector('#tetrisStart').addEventListener('click', startTetris);
+document.querySelectorAll('[data-tetris]').forEach(button => button.addEventListener('click', () => {
+  if (button.dataset.tetris === 'left') moveTetrisPiece(-1, 0);
+  if (button.dataset.tetris === 'right') moveTetrisPiece(1, 0);
+  if (button.dataset.tetris === 'down') moveTetrisPiece(0, 1, true);
+  if (button.dataset.tetris === 'rotate') rotateTetrisPiece();
+  if (button.dataset.tetris === 'drop') hardDropTetrisPiece();
+  tetrisCanvas.focus({ preventScroll: true });
+}));
+document.querySelector('#tetrisAskCoach').addEventListener('click', () => {
+  if (!tetrisLastClearedArticles.length) return;
+  const articles = tetrisLastClearedArticles.map(([number, title, summary]) => `헌법 제${number}조 ${title}: ${summary}`).join('\n');
+  sendChat(`오늘의 주제 “${classTopic.title}”와 방금 줄을 지운 조항을 연결해 설명해주세요.\n${articles}\n이 조항을 토론에서 어떻게 활용하고, 반대쪽에서는 어떤 질문을 할 수 있을까요?`);
+});
 
 renderStage();
 renderProgress();

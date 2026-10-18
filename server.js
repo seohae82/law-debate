@@ -195,7 +195,7 @@ function recordClassActivity(name, persona, type, details = {}) {
     member.presentations = member.presentationSlots.length;
   } else {
     member.participations += 1;
-    const labels = { coach: '코치에게 질문', 'public-debate': '공개 토론 발언', 'constitutional-game': '조항 비행 게임' };
+    const labels = { coach: '코치에게 질문', 'public-debate': '공개 토론 발언', 'constitutional-game': '조항 비행 게임', 'constitutional-tetris': '조항 테트리스' };
     member.activityTrail.push({ type: 'participation', label: labels[details.source] || '토론 참여', at: Date.now() });
   }
   member.activityTrail = member.activityTrail.slice(-12);
@@ -346,8 +346,8 @@ async function handleApi(request, response, url) {
   if (request.method === 'POST' && url.pathname === '/api/class/activity') {
     try {
       const body = await readBody(request, 2000);
-      if (body.type === 'participation' && body.source === 'constitutional-game') {
-        const member = recordClassActivity(body.name, body.persona, 'participation', { source: 'constitutional-game' });
+      if (body.type === 'participation' && ['constitutional-game', 'constitutional-tetris'].includes(body.source)) {
+        const member = recordClassActivity(body.name, body.persona, 'participation', { source: body.source });
         return json(response, 201, { member, ...getClassBoard() });
       }
       const slot = Number(body.slot);
