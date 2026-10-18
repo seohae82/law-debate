@@ -1,0 +1,60 @@
+- generic [active] [ref=e1]:
+  - main [ref=e3]:
+    - generic [ref=e4]:
+      - generic [ref=e5]:
+        - img [ref=e7]
+        - text: 헌법의 법정
+      - generic [ref=e9]:
+        - generic: 학생
+        - img "개띠 토론 아바타" [ref=e11]
+    - generic [ref=e23]:
+      - generic [ref=e24]:
+        - generic [ref=e25]: A CONSTITUTIONAL DEBATE
+        - heading "생각을 세우고, 근거로 말하기" [level=1] [ref=e26]
+        - paragraph [ref=e27]: 정답을 찾기보다, 서로 다른 권리를 살펴보며 내 논리를 만들어 보세요.
+      - generic [ref=e28]: 오늘의 주제 · 학교의 휴대전화 일괄 수거는 정당한가?
+    - group [ref=e29]:
+      - generic "교사 수업 설정 · 오늘의 헌법 토론 주제" [ref=e30] [cursor=pointer]
+      - paragraph [ref=e31]: 주제를 입력하면 AI가 생활 속 상황·토론 범위·관련 헌법 조항을 제안합니다. 교사가 수정한 뒤 저장하면 수업 참가자와 코치에 함께 적용됩니다. 민감한 사회 쟁점도 중립적으로 다룹니다.
+      - generic [ref=e32]:
+        - generic [ref=e33]:
+          - text: 토론 주제
+          - textbox "토론 주제" [ref=e34]:
+            - /placeholder: "예: 학교의 휴대전화 일괄 수거는 정당한가?"
+            - text: 학교의 휴대전화 일괄 수거는 정당한가?
+        - generic [ref=e35]:
+          - text: 상황과 토론 범위
+          - textbox "상황과 토론 범위" [ref=e36]:
+            - /placeholder: AI 제안을 확인하고, 교사가 상황과 토론 범위를 수정할 수 있어요.
+            - text: 학교의 수업 집중과 생활지도를 위한 휴대전화 보관이 학생의 사생활·표현의 자유와 어떻게 균형을 이루어야 하는지 토론합니다.
+      - generic [ref=e37]:
+        - status [ref=e38]: "현재 주제: 학교의 휴대전화 일괄 수거는 정당한가?"
+        - generic [ref=e39]:
+          - button "AI 상황·범위 제안" [ref=e40] [cursor=pointer]
+          - button "주제 저장 · 수업에 적용" [ref=e41] [cursor=pointer]
+    - region "학생 참여 프로필" [ref=e42]:
+      - generic [ref=e43]:
+        - strong [ref=e44]: 학생 참여 프로필
+        - generic [ref=e45]: 토론 주제를 확인한 뒤 10자 이내 별명과 출생 띠를 골라 참여를 시작하세요. 실명 대신 별명을 사용합니다.
+      - generic [ref=e46]:
+        - text: 내 별명
+        - textbox "학생 별명" [ref=e47]:
+          - /placeholder: "예: 별빛"
+          - text: 학생
+      - generic [ref=e48]:
+        - text: 내 출생 띠
+        - combobox "출생 띠 아바타" [ref=e49]:
+          - option "쥐띠"
+          - option "소띠"
+          - option "호랑이띠"
+          - option "토끼띠"
+          - option "용띠"
+          - option "뱀띠"
+          - option "말띠"
+          - option "양띠"
+          - option "원숭이띠"
+          - option "닭띠"
+          - option "개띠" [selected]
+          - option "돼지띠"
+      - button "이 별명으로 참여" [ref=e50] [cursor=pointer]
+  - status

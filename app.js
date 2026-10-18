@@ -393,7 +393,7 @@ function switchStudent(name) {
   profileReady = true;
   localStorage.setItem('courtroom-profile-ready', 'true');
   persist();
-  if (next === activeStudent) { document.querySelector('#profileName').value = next; return; }
+  if (next === activeStudent) { document.querySelector('#profileName').value = next; updateEnrollmentView(); return; }
   activeStudent = next;
   state = { ...createDefaultState(), ...(profiles[activeStudent] || {}) };
   state.persona = normalizePersona(state.persona);
@@ -406,6 +406,14 @@ function switchStudent(name) {
   renderChat();
   refreshGameBadges();
   pollClassBoard();
+  updateEnrollmentView();
+}
+
+function updateEnrollmentView() {
+  document.querySelector('#classroomContent').hidden = !profileReady;
+  document.querySelector('#sideNav').hidden = !profileReady;
+  document.querySelector('#sideCaseCard').hidden = !profileReady;
+  document.querySelector('#applyProfile').textContent = profileReady ? '참여 중 · 프로필 적용' : '이 별명으로 참여';
 }
 
 function renderClassBoard(board) {
@@ -868,6 +876,7 @@ function isLowEffortInput(text) {
 
 function scheduleNudge() {
   clearTimeout(idleTimer);
+  if (!profileReady) return;
   idleTimer = setTimeout(() => {
     if (!input.value.trim()) renderMessage({ who: 'bot', text: '잠시 생각이 멈췄나요? 한 문장이 어렵다면 “저는 ___ 쪽에 조금 더 가까워요. 왜냐하면 ___ 때문이에요”처럼 빈칸부터 채워보세요.' });
   }, 50000);
@@ -2087,6 +2096,7 @@ document.querySelector('#roomStatus').innerHTML = '<i></i>AI 주제·예의 확�
 renderStage();
 renderProgress();
 renderChat();
+updateEnrollmentView();
 checkStatus();
 pollRoom();
 pollClassBoard();
