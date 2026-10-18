@@ -12,6 +12,42 @@ let classTopic = { ...defaultTopic, updatedAt: Date.now() };
 let constitutionCache;
 let lawApiState = 'not_checked';
 let cachedLawKey = '';
+const runAIRequest = createQueueGate(8, 80);
+const runSourceRequest = createQueueGate(10, 120);
+const sourceCache = new Map();
+const statuteCache = new Map();
+const studentRequestTimes = new Map();
+
+function createQueueGate(limit, maxWaiting) {
+  let active = 0;
+  const waiting = [];
+  const run = task => new Promise((resolve, reject) => {
+    const start = () => {
+      active += 1;
+      Promise.resolve().then(task).then(resolve, reject).finally(() => {
+        active -= 1;
+        const next = waiting.shift();
+        if (next) next();
+      });
+    };
+    if (active < limit) start();
+    else if (waiting.length >= maxWaiting) reject(new Error('ai_queue_full'));
+    else waiting.push(start);
+  });
+  return run;
+}
+
+function allowStudentRequest(name, channel, cooldownMs = 1600) {
+  const key = `${channel}:${String(name || '학생').trim().slice(0, 12).toLowerCase()}`;
+  const now = Date.now();
+  const last = studentRequestTimes.get(key) || 0;
+  if (now - last < cooldownMs) return false;
+  studentRequestTimes.set(key, now);
+  if (studentRequestTimes.size > 500) {
+    for (const [student, at] of studentRequestTimes) if (now - at > 600000) studentRequestTimes.delete(student);
+  }
+  return true;
+}
 
 async function loadSecrets() {
   try {
@@ -47,7 +83,7 @@ async function readBody(request, maxBytes = 12000) {
 }
 
 async function fetchJson(url, timeout = 9000) {
-  const response = await fetch(url, { signal: AbortSignal.timeout(timeout), headers: { Accept: 'application/json' } });
+  const response = await runSourceRequest(() => fetch(url, { signal: AbortSignal.timeout(timeout), headers: { Accept: 'application/json' } }));
   if (!response.ok) throw new Error(`upstream_${response.status}`);
   const data = await response.json();
   if (data?.resultCode && data.resultCode !== '00') throw new Error(`moleg_${data.resultCode}`);
@@ -93,18 +129,22 @@ function relevantStatutes(query) {
 }
 
 async function searchStatute(title) {
+  const cached = statuteCache.get(title);
+  if (cached && cached.expires > Date.now()) return cached.value;
   const key = process.env.MOLEG_API_KEY;
   if (!key) return [];
   const url = new URL('https://www.law.go.kr/DRF/lawSearch.do');
   url.search = new URLSearchParams({ OC: key, target: 'law', type: 'JSON', query: title, display: '3' });
   const data = await fetchJson(url);
   const laws = data?.LawSearch?.law;
-  return (Array.isArray(laws) ? laws : laws ? [laws] : []).map(law => ({
+  const value = (Array.isArray(laws) ? laws : laws ? [laws] : []).map(law => ({
     title: law.법령명한글,
     url: `https://www.law.go.kr/법령/${encodeURIComponent(law.법령명한글 || title)}`,
     excerpt: `${law.법령구분명 || '법령'} · 시행일 ${law.시행일자 || '정보 확인 필요'}`,
     id: `statute-${law.법령ID || title}`
   }));
+  statuteCache.set(title, { value, expires: Date.now() + 1800000 });
+  return value;
 }
 
 function plainText(html) {
@@ -114,7 +154,7 @@ function plainText(html) {
 async function searchEasyLaw(query) {
   const url = new URL('https://www.easylaw.go.kr/CSP/UnScRlt.laf');
   url.searchParams.set('search_put', query.slice(0, 100));
-  const response = await fetch(url, { signal: AbortSignal.timeout(9000), headers: { 'User-Agent': 'ClassroomDebate/1.0', Accept: 'text/html' } });
+  const response = await runSourceRequest(() => fetch(url, { signal: AbortSignal.timeout(9000), headers: { 'User-Agent': 'ClassroomDebate/1.0', Accept: 'text/html' } }));
   if (!response.ok) throw new Error(`upstream_${response.status}`);
   const html = await response.text();
   const results = [];
@@ -139,6 +179,16 @@ async function searchEasyLaw(query) {
 }
 
 async function retrieveSources(query) {
+  const key = String(query).trim().toLocaleLowerCase('ko-KR').slice(0, 360);
+  const cached = sourceCache.get(key);
+  if (cached && cached.expires > Date.now()) return cached.promise;
+  const promise = retrieveSourcesFresh(query);
+  sourceCache.set(key, { promise, expires: Date.now() + 600000 });
+  if (sourceCache.size > 240) sourceCache.delete(sourceCache.keys().next().value);
+  return promise;
+}
+
+async function retrieveSourcesFresh(query) {
   const easyQuery = /학교|학생|교실|수업/.test(query) && /휴대|폰|스마트|전화/.test(query) ? '교육분야 개인정보보호 휴대전화' : query;
   const [constitution, easyResults, statutes] = await Promise.all([
     getConstitution(),
@@ -278,7 +328,7 @@ async function generateFeedback({ message, history, stage, position, topic, arti
     conversation: history.slice(-12),
     officialSources: sources.map(({ title, url, excerpt }) => ({ title, url, excerpt: excerpt.slice(0, 1200) }))
   };
-  const response = await fetch('https://api.upstage.ai/v1/chat/completions', {
+  const response = await runAIRequest(() => fetch('https://api.upstage.ai/v1/chat/completions', {
     method: 'POST',
     signal: AbortSignal.timeout(20000),
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
@@ -312,7 +362,7 @@ async function generateFeedback({ message, history, stage, position, topic, arti
         }
       }
     })
-  });
+  }));
   if (!response.ok) throw new Error(`upstage_${response.status}`);
   const data = await response.json();
   const output = data?.choices?.[0]?.message?.content;
@@ -352,7 +402,7 @@ async function handleApi(request, response, url) {
       if (cards.length < 4) return json(response, 400, { error: '관련 조항을 준비하지 못했어요.' });
       if (!process.env.UPSTAGE_API_KEY) return json(response, 503, { error: 'Upstage 연결을 확인할 수 없어요.' });
       const sources = await retrieveSources(`${classTopic.title} ${classTopic.scenario}`);
-      const upstream = await fetch('https://api.upstage.ai/v1/chat/completions', {
+      const upstream = await runAIRequest(() => fetch('https://api.upstage.ai/v1/chat/completions', {
         method: 'POST',
         signal: AbortSignal.timeout(20000),
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${process.env.UPSTAGE_API_KEY}` },
@@ -378,7 +428,7 @@ async function handleApi(request, response, url) {
             }
           }
         })
-      });
+      }));
       if (!upstream.ok) return json(response, 502, { error: '오늘 주제에 맞는 문제를 준비하지 못했어요.' });
       const payload = await upstream.json();
       const output = payload?.choices?.[0]?.message?.content;
@@ -407,7 +457,7 @@ async function handleApi(request, response, url) {
       if (!isConstitutionalTopic(title, scenario) || articleCards.length < 4) return json(response, 400, { error: '토론 주제에 헌법·권리 쟁점을 포함해 주세요.' });
       if (!process.env.UPSTAGE_API_KEY) return json(response, 503, { error: 'Upstage 연결을 확인할 수 없어요.' });
       const sources = await retrieveSources(`${title} ${scenario}`);
-      const upstream = await fetch('https://api.upstage.ai/v1/chat/completions', {
+      const upstream = await runAIRequest(() => fetch('https://api.upstage.ai/v1/chat/completions', {
         method: 'POST',
         signal: AbortSignal.timeout(20000),
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${process.env.UPSTAGE_API_KEY}` },
@@ -433,7 +483,7 @@ async function handleApi(request, response, url) {
             }
           }
         })
-      });
+      }));
       if (!upstream.ok) return json(response, 502, { error: 'AI 주제 제안을 받지 못했어요. 다시 시도해 주세요.' });
       const payload = await upstream.json();
       const parsed = JSON.parse(payload?.choices?.[0]?.message?.content || '{}');
@@ -517,6 +567,7 @@ async function handleApi(request, response, url) {
         at: Date.now()
       };
       if (!post.body) return json(response, 400, { error: 'empty_message' });
+      if (!allowStudentRequest(post.name, 'room', 1200)) return json(response, 429, { error: '조금 천천히 발언해 주세요. 잠시 뒤 다시 등록할 수 있어요.' });
       const compactBody = post.body.replace(/\s/g, '');
       if (!/[가-힣A-Za-z]/.test(compactBody) || /^(?:ㅋ|ㅎ|ㅇ|ㄴ|ㄱ){2,}$/u.test(compactBody) || /(.)\1{5,}/u.test(compactBody)) {
         return json(response, 422, { error: 'off_topic', feedback: `반복되거나 너무 짧은 글은 토론방에 등록하지 않았어요. “${classTopic.title}”와 연결되는 주장이나 질문을 한 문장으로 써보세요.` });
@@ -532,7 +583,8 @@ async function handleApi(request, response, url) {
       roomPosts.push(post);
       if (roomPosts.length > 200) roomPosts.splice(0, roomPosts.length - 200);
       return json(response, 201, { post, member });
-    } catch {
+    } catch (error) {
+      if (error.message === 'ai_queue_full') return json(response, 503, { error: '여러 학생의 발언을 함께 확인 중이에요. 잠시 뒤 다시 등록해 주세요.' });
       return json(response, 400, { error: 'invalid_message' });
     }
   }
@@ -547,7 +599,7 @@ async function handleApi(request, response, url) {
       if (cards.length < 4) return json(response, 400, { error: '관련 헌법 조항을 준비하지 못했습니다.' });
       if (!process.env.UPSTAGE_API_KEY) return json(response, 503, { error: 'Upstage 연결을 확인할 수 없습니다.' });
       const sources = await retrieveSources(`${classTopic.title} ${classTopic.scenario}`);
-      const responseFromUpstage = await fetch('https://api.upstage.ai/v1/chat/completions', {
+      const responseFromUpstage = await runAIRequest(() => fetch('https://api.upstage.ai/v1/chat/completions', {
         method: 'POST',
         signal: AbortSignal.timeout(20000),
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${process.env.UPSTAGE_API_KEY}` },
@@ -573,7 +625,7 @@ async function handleApi(request, response, url) {
             }
           }
         })
-      });
+      }));
       if (!responseFromUpstage.ok) return json(response, 502, { error: '오늘의 주제에 맞는 문제를 만들지 못했습니다.' });
       const payload = await responseFromUpstage.json();
       const output = payload?.choices?.[0]?.message?.content;
@@ -597,6 +649,7 @@ async function handleApi(request, response, url) {
       const body = await readBody(request);
       const message = String(body.message || '').trim().slice(0, 3000);
       if (!message) return json(response, 400, { error: 'empty_message' });
+      if (!allowStudentRequest(body.name, 'coach', 1800)) return json(response, 429, { error: '질문이 한꺼번에 몰렸어요. 잠시 뒤 다시 물어봐 주세요.' });
       const history = Array.isArray(body.history) ? body.history.filter(item => ['user', 'model'].includes(item.role)).slice(-12).map(item => ({ role: item.role, text: String(item.text || '').slice(0, 2000) })) : [];
       const card = body.articleCard && Number.isInteger(Number(body.articleCard.number)) && Number(body.articleCard.number) >= 1 && Number(body.articleCard.number) <= 130
         ? { number: Number(body.articleCard.number), title: String(body.articleCard.title || '').slice(0, 100), summary: String(body.articleCard.summary || '').slice(0, 300) }
@@ -605,8 +658,9 @@ async function handleApi(request, response, url) {
       if (result.onTopic) recordClassActivity(body.name, body.persona, 'participation', { source: 'coach', text: message, feedback: result.feedback, stage: body.stage });
       return json(response, 200, result);
     } catch (error) {
-      const status = String(error.message).startsWith('upstage_') ? 502 : error.message === 'too_large' ? 413 : 502;
-      return json(response, status, { error: status === 502 ? '자료 조회 또는 Upstage 연결에 실패했습니다. 잠시 뒤 다시 시도해 주세요.' : '요청 내용이 너무 깁니다.' });
+      const status = error.message === 'ai_queue_full' ? 503 : String(error.message).startsWith('upstage_') ? 502 : error.message === 'too_large' ? 413 : 502;
+      const errorText = status === 503 ? '여러 학생을 동시에 돕고 있어요. 잠시 뒤 다시 질문해 주세요.' : status === 502 ? '자료 조회 또는 Upstage 연결에 실패했습니다. 잠시 뒤 다시 시도해 주세요.' : '요청 내용이 너무 깁니다.';
+      return json(response, status, { error: errorText });
     }
   }
   return json(response, 404, { error: 'not_found' });
