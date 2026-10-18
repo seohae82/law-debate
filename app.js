@@ -138,7 +138,10 @@ const constitutionCardsData = [
 const defaultClassTopic = { title: '학교의 휴대전화 일괄 수거는 정당한가?', scenario: '학교의 수업 집중과 생활지도를 위한 휴대전화 보관이 학생의 사생활·표현의 자유와 어떻게 균형을 이루어야 하는지 토론합니다.' };
 let classTopic = { ...defaultClassTopic };
 let classTopicLoaded = false;
-const createDefaultState = () => ({ presentations: [], participations: 0, creative: false, logical: false, stage: 'start', messages: [], thoughtHistory: [], note: '', persona: 'owl' });
+const zodiacPersonas = ['rat', 'ox', 'tiger', 'rabbit', 'dragon', 'snake', 'horse', 'goat', 'monkey', 'rooster', 'dog', 'pig'];
+const legacyPersonas = { owl: 'rooster', fox: 'tiger', turtle: 'ox', whale: 'dragon' };
+function normalizePersona(persona) { return legacyPersonas[persona] || (zodiacPersonas.includes(persona) ? persona : 'rat'); }
+const createDefaultState = () => ({ presentations: [], participations: 0, creative: false, logical: false, stage: 'start', messages: [], thoughtHistory: [], note: '', persona: 'rat' });
 let legacyState = {};
 let profiles = {};
 let activeStudent = localStorage.getItem('courtroom-active-student') || '학생';
@@ -146,7 +149,7 @@ let profileReady = localStorage.getItem('courtroom-profile-ready') === 'true' ||
 try { legacyState = JSON.parse(localStorage.getItem('courtroom-state') || '{}'); } catch {}
 try { profiles = JSON.parse(localStorage.getItem('courtroom-profiles') || '{}'); } catch {}
 let state = { ...createDefaultState(), ...(profiles[activeStudent] || (activeStudent === '학생' ? legacyState : {})) };
-state.persona ||= 'owl';
+state.persona = normalizePersona(state.persona);
 state.presentations = (state.presentations || []).map((item, index) => typeof item === 'number' ? { id: `legacy-${item}-${index}`, at: item, slot: index, text: '' } : item);
 if (!state.thoughtHistory?.length && state.messages?.length) state.thoughtHistory = state.messages.map((message, index) => ({ id: `old-${index}`, type: message.who === 'user' ? 'question' : 'coach', text: message.text, at: Date.now(), stage: state.stage }));
 let teacherMode = localStorage.getItem('courtroom-teacher-mode') === 'true';
@@ -306,27 +309,46 @@ function renderProgress() {
 }
 
 const avatarPalettes = {
-  owl: ['#b5bea8', '#cfb66f', '#df935e', '#a94d42'],
-  fox: ['#d4a18e', '#d9855e', '#c86648', '#91463c'],
-  turtle: ['#b5c89c', '#8bad7e', '#5e987d', '#386b62'],
-  whale: ['#b1cbd5', '#83aec0', '#5d92ae', '#456b93']
+  rat: ['#c8b3a2', '#b98764', '#a96e4e', '#754b43'],
+  ox: ['#b5bea8', '#8f9c70', '#718254', '#4f623f'],
+  tiger: ['#d4bc91', '#d69b47', '#cb743a', '#a94d32'],
+  rabbit: ['#d8c9c1', '#d9aba6', '#c98686', '#a95d69'],
+  dragon: ['#9ebdb9', '#64a69a', '#438579', '#305f6e'],
+  snake: ['#bdc39a', '#99a452', '#748a43', '#53673a'],
+  horse: ['#c9ad91', '#aa7954', '#875638', '#613e36'],
+  goat: ['#c8c1ad', '#a79a79', '#827553', '#635744'],
+  monkey: ['#c3a58e', '#a87958', '#875d46', '#62483f'],
+  rooster: ['#d4b98f', '#ca9b48', '#b8753c', '#944a3c'],
+  dog: ['#bac2b4', '#8a9c9c', '#607f88', '#465f70'],
+  pig: ['#e0b9b2', '#d9958e', '#c87578', '#a75161']
 };
-function avatarColor(persona, presentations) { return avatarPalettes[persona]?.[Math.min(presentations, 3)] || avatarPalettes.owl[0]; }
+function avatarColor(persona, presentations) { return avatarPalettes[persona]?.[Math.min(presentations, 3)] || avatarPalettes.rat[0]; }
 
 function characterSvg(persona, count, presentations = count) {
-  const characters = {
-    owl: { name: '부엉이', color: '#d6a655', shape: '<path d="M23 39 25 15 43 31 57 31 75 15 77 39Q83 60 70 77L61 86H39L30 77Q17 60 23 39Z"/><path fill="#fff7e8" d="M31 45a11 11 0 1 0 22 0 11 11 0 0 0-22 0Zm16 0a11 11 0 1 0 22 0 11 11 0 0 0-22 0Z"/><circle cx="42" cy="46" r="3.5" fill="#26384a"/><circle cx="58" cy="46" r="3.5" fill="#26384a"/><path fill="#a74937" d="m46 53 4 7 4-7Z"/><path d="M28 65q9 7 18 0m8 0q9 7 18 0" fill="none" stroke="#754b31" stroke-width="2"/>' },
-    fox: { name: '여우', color: '#d8784e', shape: '<path d="M20 42 17 14 40 29Q50 25 60 29L83 14 80 43Q80 69 50 82 20 69 20 42Z"/><path fill="#fff0df" d="M26 53q12-10 24 0 12-10 24 0-3 17-24 25-21-8-24-25Z"/><path d="M32 46q6-5 12 0m12 0q6-5 12 0" fill="none" stroke="#3d3540" stroke-width="3" stroke-linecap="round"/><circle cx="38" cy="48" r="2" fill="#243343"/><circle cx="62" cy="48" r="2" fill="#243343"/><path fill="#573944" d="M46 57q4-4 8 0l-4 5Z"/><path d="M50 62q-5 6-10 1m10-1q5 6 10 1" fill="none" stroke="#75463d" stroke-width="2"/>' },
-    turtle: { name: '거북이', color: '#64947a', shape: '<path fill="#86ad78" d="M24 48a26 26 0 0 1 52 0v13H24Z"/><path fill="#4f765d" d="M22 53q1-25 28-25t28 25q-4 19-28 22-24-3-28-22Z"/><path d="M50 29v43M27 49h46M34 35l32 31m0-31L34 66" fill="none" stroke="#a8c48b" stroke-width="2"/><path d="M38 43a2 2 0 1 0 0 4m24-4a2 2 0 1 0 0 4" stroke="#243b3a" stroke-width="4" stroke-linecap="round"/><path d="M44 53q6 5 12 0" fill="none" stroke="#284c42" stroke-width="2" stroke-linecap="round"/><path d="M31 73 26 82m43-9 5 9" stroke="#64947a" stroke-width="7" stroke-linecap="round"/>' },
-    whale: { name: '고래', color: '#6798b7', shape: '<path fill="#6798b7" d="M18 53q4-25 34-27 25 0 32 21l8-11 2 24-11-5Q72 79 48 78 20 77 18 53Z"/><path fill="#d9edf0" d="M25 57q11 7 25 7 24 0 38-10-1 21-28 25-24 0-35-12Z"/><path d="M39 46a2.5 2.5 0 1 0 0 5m23-5a2.5 2.5 0 1 0 0 5" stroke="#20394a" stroke-width="4" stroke-linecap="round"/><path d="M45 57q7 5 14 0" fill="none" stroke="#31576c" stroke-width="2" stroke-linecap="round"/><path d="M49 25q-5-9 0-15m4 15q-1-7 5-11" fill="none" stroke="#6798b7" stroke-width="3" stroke-linecap="round"/>' }
+  const animals = {
+    rat: { name: '쥐', ears: '<circle cx="31" cy="38" r="12"/><circle cx="69" cy="38" r="12"/><circle cx="31" cy="38" r="6" fill="#efc5bd"/><circle cx="69" cy="38" r="6" fill="#efc5bd"/>', back: '<path d="M73 73q21-3 16 10-3 5-13 3" fill="none" stroke="#8f6755" stroke-width="3"/>', markings: '', muzzle: '<ellipse cx="50" cy="66" rx="12" ry="8" fill="#f2ddd2"/><path d="M38 65 25 61m14 9-14 1m37-6 13-4m-12 9 13 1" fill="none" stroke="#57443e" stroke-width="1.5"/>', nose: '<path d="m47 62 3 3 3-3Z" fill="#a75161"/>' },
+    ox: { name: '소', ears: '<path d="M29 41Q13 33 17 24q9 1 18 13m36 4q16-8 12-17-9 1-18 13"/><path d="M38 33Q35 17 43 15q8 6 6 17m3 0q-2-11 7-17 8 3 3 18" fill="#f2ead0"/>', back: '', markings: '<path d="M43 33q7-8 14 0" fill="none" stroke="#fff2d5" stroke-width="5" stroke-linecap="round"/>', muzzle: '<ellipse cx="50" cy="66" rx="16" ry="11" fill="#eee4d1"/><circle cx="44" cy="66" r="2" fill="#584b42"/><circle cx="56" cy="66" r="2" fill="#584b42"/>', nose: '' },
+    tiger: { name: '호랑이', ears: '<circle cx="31" cy="36" r="10"/><circle cx="69" cy="36" r="10"/><circle cx="31" cy="36" r="5" fill="#f1d1a0"/><circle cx="69" cy="36" r="5" fill="#f1d1a0"/>', back: '', markings: '<path d="m38 38 7 7m17-7-7 7M28 53l11 3m33-3-11 3m-7-22v9" fill="none" stroke="#30343a" stroke-width="3" stroke-linecap="round"/>', muzzle: '<ellipse cx="50" cy="66" rx="13" ry="9" fill="#f7e5ca"/>', nose: '<path d="m47 61 3 3 3-3Z" fill="#523d37"/>' },
+    rabbit: { name: '토끼', ears: '<path d="M38 43Q27 22 34 10q11-2 16 31m2 0Q55 13 67 10q8 10-5 33Z"/><path d="M40 36Q35 19 38 15m20 21q7-17 9-21" fill="none" stroke="#efc5bd" stroke-width="4" stroke-linecap="round"/>', back: '', markings: '', muzzle: '<ellipse cx="44" cy="66" rx="8" ry="7" fill="#fff4ed"/><ellipse cx="56" cy="66" rx="8" ry="7" fill="#fff4ed"/><path d="M47 65h6v12q-3 3-6 0Z" fill="#fffaf0" stroke="#725c53" stroke-width="1.5"/>', nose: '<circle cx="50" cy="61" r="3" fill="#cc7e86"/>' },
+    dragon: { name: '용', ears: '<path d="M31 40Q16 26 28 13q12 2 13 19m18 0q1-17 13-19 12 13-3 27Z"/>', back: '<path d="M25 60Q8 48 17 34l13 10m45 16q17-12 8-26L78 46" fill="#8ac0b0" stroke="#314d50" stroke-width="2"/>', markings: '<path d="m34 43 5-8 4 8m14 0 4-8 5 8" fill="none" stroke="#f1d08a" stroke-width="2.5"/>', muzzle: '<ellipse cx="50" cy="66" rx="13" ry="8" fill="#d8e3b5"/>', nose: '<path d="m47 63 3 3 3-3Z" fill="#315457"/>' },
+    snake: { name: '뱀', ears: '', back: '<path d="M24 73q-9 13 8 15 19 3 20-10 1-11-13-12-11-1-8 7 2 4 8 2" fill="none" stroke="#83a354" stroke-width="10" stroke-linecap="round"/>', markings: '<path d="m39 33 4 4-4 4m15-8 4 4-4 4" fill="none" stroke="#e9d17e" stroke-width="2.5"/>', muzzle: '<ellipse cx="50" cy="67" rx="16" ry="9" fill="#d4e0a0"/>', nose: '<path d="M48 68q2 4 4 0m-2 1v7m0 0-4 4m4-4 4 4" fill="none" stroke="#8a4652" stroke-width="2"/>' },
+    horse: { name: '말', ears: '<path d="M34 41 31 15q12 3 18 24m3 0q7-21 18-24l-3 26Z"/>', back: '<path d="M29 43q-13 12 1 27m40-27q14 12-1 27" fill="none" stroke="#55453c" stroke-width="5" stroke-linecap="round"/>', markings: '<path d="M50 34v12" stroke="#f3dfbd" stroke-width="4" stroke-linecap="round"/>', muzzle: '<ellipse cx="50" cy="67" rx="14" ry="10" fill="#eedbc6"/>', nose: '<circle cx="45" cy="67" r="1.8" fill="#56443c"/><circle cx="55" cy="67" r="1.8" fill="#56443c"/>' },
+    goat: { name: '양', ears: '<path d="M32 38Q13 30 17 17q14 0 22 17m23 0q8-17 22-17 4 13-15 21"/><path d="M37 36Q26 15 35 10q10 8 10 23m10 0q0-15 10-23 9 5-2 26Z" fill="#f0e5c8"/>', back: '<path d="M41 76q9 13 18 0" fill="#eee2c2" stroke="#37434a" stroke-width="2"/>', markings: '', muzzle: '<ellipse cx="50" cy="63" rx="15" ry="10" fill="#f3e8dc"/>', nose: '<path d="m47 60 3 3 3-3Z" fill="#8b5c58"/>' },
+    monkey: { name: '원숭이', ears: '<circle cx="25" cy="52" r="12"/><circle cx="75" cy="52" r="12"/><circle cx="25" cy="52" r="6" fill="#e5c5a5"/><circle cx="75" cy="52" r="6" fill="#e5c5a5"/>', back: '', markings: '<ellipse cx="50" cy="61" rx="21" ry="17" fill="#e8caa7"/>', muzzle: '<ellipse cx="50" cy="66" rx="13" ry="8" fill="#f3e1c9"/>', nose: '<circle cx="47" cy="63" r="1.8" fill="#453a35"/><circle cx="53" cy="63" r="1.8" fill="#453a35"/>' },
+    rooster: { name: '닭', ears: '', back: '<path d="M40 31q-10-13 0-17 4 9 10 11 5-14 12-9 2 8-6 16" fill="#c84e46" stroke="#34434a" stroke-width="2"/>', markings: '<path d="M34 40q-6-8-11-2m43 2q6-8 11-2" fill="none" stroke="#d87b40" stroke-width="5" stroke-linecap="round"/>', muzzle: '<path d="m44 61 6 8 6-8Z" fill="#e4b94e"/>', nose: '<path d="M50 69q-5 5-1 8 5-3 1-8" fill="#c94d48"/>' },
+    dog: { name: '개', ears: '<path d="M29 34Q11 27 17 56q4 12 18 6m31-28q18-7 12 22-4 12-18 6"/>', back: '', markings: '', muzzle: '<ellipse cx="50" cy="66" rx="14" ry="10" fill="#f0e3ca"/>', nose: '<ellipse cx="50" cy="61" rx="5" ry="3.5" fill="#35404a"/>' },
+    pig: { name: '돼지', ears: '<path d="M29 42 24 20q15 1 22 17m7 0q7-16 22-17l-5 22Z"/><path d="m29 31 8 9m34-9-8 9" fill="none" stroke="#f0c4bc" stroke-width="3"/>', back: '', markings: '', muzzle: '<ellipse cx="50" cy="66" rx="16" ry="12" fill="#f3c3bf"/>', nose: '<ellipse cx="44" cy="66" rx="2" ry="3" fill="#99565b"/><ellipse cx="56" cy="66" rx="2" ry="3" fill="#99565b"/>' }
   };
-  const character = characters[persona] || characters.owl;
+  const character = animals[persona] || animals.rat;
   const color = avatarColor(persona, presentations);
-  const shape = character.shape.replaceAll(character.color, color).replaceAll('#86ad78', color).replaceAll('#4f765d', color);
+  const ears = character.ears;
   const sprout = count >= 1 ? `<path d="M50 23V${count >= 2 ? 9 : 16}" stroke="#56745c" stroke-width="3" stroke-linecap="round"/><path d="M50 16q-12-10-16 1 10 5 16-1Z" fill="#70966b"/>${count >= 2 ? '<path d="M50 11q10-11 17-3-4 11-17 9Z" fill="#91ad70"/>' : ''}` : '';
   const sparks = count >= 3 ? '<path d="m15 37 2 4 4 2-4 2-2 4-2-4-4-2 4-2Zm70 0 2 4 4 2-4 2-2 4-2-4-4-2 4-2Z" fill="#c5944a"/>' : '';
   const badge = count >= 5 ? '<path d="m50 74 3 5 6 1-4 4 1 6-6-3-6 3 1-6-4-4 6-1Z" fill="#c5944a" stroke="#fff7df" stroke-width="1"/>' : '';
-  return `<svg viewBox="0 0 100 100" role="img" aria-label="성장하는 ${character.name} 토론 아바타"><circle cx="50" cy="53" r="43" fill="#fff8e8"/><g fill="${color}" stroke="#28394a" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round">${shape}</g>${sprout}${sparks}${badge}</svg>`;
+  const face = `<ellipse cx="50" cy="57" rx="27" ry="29" fill="${color}" stroke="#28394a" stroke-width="2.5"/>`;
+  const eyes = '<ellipse cx="41" cy="52" rx="7" ry="8" fill="#fff8e8"/><ellipse cx="59" cy="52" rx="7" ry="8" fill="#fff8e8"/><circle cx="43" cy="53" r="3" fill="#273744"/><circle cx="61" cy="53" r="3" fill="#273744"/>';
+  const smile = '<path d="M44 73q6 5 12 0" fill="none" stroke="#4a4140" stroke-width="2" stroke-linecap="round"/>';
+  return `<svg viewBox="0 0 100 100" role="img" aria-label="${character.name}띠 토론 아바타"><circle cx="50" cy="53" r="43" fill="#fff8e8"/><g stroke="#28394a" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round">${character.back}</g><g fill="${color}" stroke="#28394a" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round">${ears}${face}</g>${character.markings}${eyes}${character.muzzle}${character.nose}${smile}${sprout}${sparks}${badge}</svg>`;
 }
 
 function renderCharacter(animate = false) {
@@ -335,7 +357,7 @@ function renderCharacter(animate = false) {
   const participations = Math.max(state.participations || 0, member?.participations || 0);
   const growthPoints = presentations * 3 + participations;
   const count = Math.floor(growthPoints / 3);
-  const persona = state.persona || 'owl';
+  const persona = state.persona || 'rat';
   const growthStages = ['시작 단계', '첫 주장 새싹', '근거 탐험가', '반론을 듣는 토론가', '생각을 잇는 법정 안내자', '헌법 토론 마스터'];
   const title = '토론 아바타';
   const nextStep = 3 - growthPoints % 3;
@@ -370,6 +392,7 @@ function switchStudent(name) {
   if (next === activeStudent) { document.querySelector('#profileName').value = next; return; }
   activeStudent = next;
   state = { ...createDefaultState(), ...(profiles[activeStudent] || {}) };
+  state.persona = normalizePersona(state.persona);
   state.presentations = (state.presentations || []).map((item, index) => typeof item === 'number' ? { id: `legacy-${item}-${index}`, at: item, slot: index, text: '' } : item);
   if (!state.thoughtHistory?.length && state.messages?.length) state.thoughtHistory = state.messages.map((message, index) => ({ id: `old-${index}`, type: message.who === 'user' ? 'question' : 'coach', text: message.text, at: Date.now(), stage: state.stage }));
   persist();
@@ -569,7 +592,7 @@ async function updateClassSupport(name, persona, action) {
 
 async function pollClassBoard() {
   try {
-    const query = new URLSearchParams({ persona: state.persona || 'owl' });
+    const query = new URLSearchParams({ persona: state.persona || 'rat' });
     if (profileReady) query.set('name', activeStudent);
     const response = await fetch(`/api/class/board?${query}`, { cache: 'no-store' });
     if (!response.ok) throw new Error('board_unavailable');
@@ -864,11 +887,13 @@ function constitutionChapter(number) {
 
 function renderConstitutionCards() {
   const query = document.querySelector('#articleSearch').value.trim().toLowerCase();
+  const normalizedQuery = query.replace(/제|조/g, '').trim();
   const chapterFilter = document.querySelector('#articleChapterFilter').value;
   const articles = constitutionCardsData.filter(([number, title, summary]) => {
     const chapter = constitutionChapter(number);
+    const haystack = `${number}조 ${title} ${summary} ${chapter.name}`.toLowerCase();
     return (chapterFilter === 'all' || Number(chapterFilter) === chapter.id)
-      && (!query || `${number}조 ${title} ${summary} ${chapter.name}`.toLowerCase().includes(query));
+      && (!query || haystack.includes(query) || Boolean(normalizedQuery && haystack.includes(normalizedQuery)));
   });
   document.querySelector('#articleCount').textContent = `${articles.length}개 조항`;
   const grid = document.querySelector('#articleGrid');

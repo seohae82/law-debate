@@ -166,7 +166,9 @@ function isDebateTopicRelated(message, topic) {
 
 function getOrCreateClassMember(name, persona) {
   const student = String(name || '학생').trim().slice(0, 12) || '학생';
-  const character = ['owl', 'fox', 'turtle', 'whale'].includes(persona) ? persona : 'owl';
+  const legacyPersonas = { owl: 'rooster', fox: 'tiger', turtle: 'ox', whale: 'dragon' };
+  const zodiacPersonas = ['rat', 'ox', 'tiger', 'rabbit', 'dragon', 'snake', 'horse', 'goat', 'monkey', 'rooster', 'dog', 'pig'];
+  const character = legacyPersonas[persona] || (zodiacPersonas.includes(persona) ? persona : 'rat');
   const member = classMembers.get(student) || { name: student, persona: character, presentations: 0, presentationSlots: [], participations: 0, helpRequested: false, activityTrail: [] };
   member.persona = character;
   if (!Array.isArray(member.presentationSlots)) member.presentationSlots = [];
