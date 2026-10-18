@@ -1269,7 +1269,7 @@ document.querySelector('#roomForm').addEventListener('submit', async event => {
     });
     const result = await response.json();
     if (response.status === 422) {
-      showRoomModeration(result.feedback || `이 발언은 “${classTopic.title}”와 연결해 다시 적어볼까요?`);
+      showRoomModeration(result.feedback || `이 발언은 “${classTopic.title}”와 연결해 다시 적어볼까요?`, result.error === 'personal_attack' ? 'attack' : 'warning');
       field.focus();
       return;
     }
@@ -1979,7 +1979,7 @@ document.querySelector('#tetrisAskCoach').addEventListener('click', () => {
 
 initFlightControls();
 setFlightLane(1);
-document.querySelector('#roomStatus').innerHTML = '<i></i>AI 주제 확인';
+document.querySelector('#roomStatus').innerHTML = '<i></i>AI 주제·예의 확인';
 renderStage();
 renderProgress();
 renderChat();

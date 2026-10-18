@@ -170,6 +170,10 @@ function isDebateTopicRelated(message, topic) {
   return topicMatch || /헌법|제\s*\d+조|권리|기본권|찬성|반대|평등|차별|존엄|공익|발언|토론|발표|근거|상대|반론|제한|막막|모르겠|어떻게|도와|궁금|첫 문장/.test(message);
 }
 
+function hasPersonalAttack(message) {
+  return /(?:씨발|시발|ㅅㅂ|병신|개새끼|닥쳐|꺼져|찐따|미친(?:년|놈)|쓸모없(?:다|는|어)|니가|너같은|상대방은|반대팀은|찬성팀은).{0,18}(?:병신|멍청|바보|무식|한심|쓰레기|찐따|개소리|쓸모없|꺼져)|(?:병신|개새끼|닥쳐|꺼져|찐따|미친(?:년|놈))/.test(message);
+}
+
 function getOrCreateClassMember(name, persona) {
   const student = String(name || '학생').trim().slice(0, 12) || '학생';
   const legacyPersonas = { owl: 'rooster', fox: 'tiger', turtle: 'ox', whale: 'dragon' };
@@ -226,6 +230,17 @@ function getClassBoard() {
 }
 
 async function generateFeedback({ message, history, stage, position, topic, articleCard }) {
+  if (hasPersonalAttack(message)) {
+    return {
+      aiConnected: Boolean(process.env.UPSTAGE_API_KEY),
+      onTopic: false,
+      personalAttack: true,
+      creative: false,
+      logical: false,
+      sources: [],
+      feedback: '상대방을 욕하거나 낮춰 부르는 표현은 토론 발언으로 기록하지 않아요. 사람을 평가하기보다 상대의 주장과 근거를 반박해 주세요. “상대의 ___ 주장에는 ___ 근거로 다른 생각을 제시합니다.”처럼 바꿔볼까요?'
+    };
+  }
   const sources = await retrieveSources(`${topic.title} ${topic.scenario} ${message}`.slice(0, 360));
   const key = process.env.UPSTAGE_API_KEY;
   if (!key) {
@@ -236,6 +251,7 @@ async function generateFeedback({ message, history, stage, position, topic, arti
     return {
       aiConnected: false,
       onTopic,
+      personalAttack: false,
       feedback: onTopic
         ? `${praise ? `${praise} ` : ''}공식 자료를 찾아봤어요. 아래 근거를 살펴보고, 어떤 권리와 공익이 부딪히는지 비교해 보세요.`
         : `잠깐, 이곳은 헌법 토론 생각을 나누는 공간이에요. “${topic.title}”와 연결되는 권리나 근거를 골라 다시 적어볼까요?`,
@@ -263,7 +279,7 @@ async function generateFeedback({ message, history, stage, position, topic, arti
     body: JSON.stringify({
       model: 'solar-mini4',
       messages: [
-        { role: 'system', content: `당신은 대한민국 헌법 모의법정 수업의 토론 코치입니다. 이번 수업의 유일한 토론 주제는 “${topic.title}”입니다. 상황 설명: ${topic.scenario} 최신 학생 발언만 보고 주제와 관련 있는지 판단하세요. 이전 대화가 주제와 관련 있어도 최신 발언이 전혀 다른 잡담·낙서·반복이면 onTopic=false로 하고, 혼내지 말고 현재 주제로 돌아오는 문장 틀과 질문을 제안하세요. 정치·사회적으로 민감한 쟁점이라는 이유만으로 onTopic=false 처리하거나 답변을 피하지 마세요. 그런 주제는 특정 정당·후보를 지지하지 않는 중립적 학습 설명으로 다루고, 충돌하는 기본권과 공익, 찬반의 법적 근거를 균형 있게 비교하세요. 선거운동·정파적 설득이나 영토 쟁점의 선동적 주장을 작성하지 말고, 그런 요청은 중립적 헌법·법령 설명으로 돌려주세요. 관련 발언이면 onTopic=true로 표시하세요. selectedConstitutionCard는 조항을 찾도록 돕는 짧은 학습용 요약이지 정확한 원문 인용이 아닙니다. officialSources에 원문 근거가 없으면 요약을 법 조문처럼 인용하지 말고 국가법령정보센터 원문에서 확인하도록 안내하세요. 학생의 입장을 대신 정하지 말고 구체적인 칭찬과 보완점, 다음 질문을 한국어 존댓말로 답하세요. 창의성과 논리성은 실제 발언에 근거해 평가하고 빈 칭찬은 하지 마세요. 제공된 officialSources만 근거로 인용하며 조항·사실·판례를 만들지 마세요. 헌법 원문과 쉬운 생활법령 설명을 구별하고 법적 결론을 단정하지 마세요. 학생들이 서로 반론과 질문을 주고받도록 도와주세요. 개인정보나 실명 공개를 부추기지 마세요.` },
+        { role: 'system', content: `당신은 대한민국 헌법 모의법정 수업의 토론 코치입니다. 이번 수업의 유일한 토론 주제는 “${topic.title}”입니다. 상황 설명: ${topic.scenario} 최신 학생 발언만 보고 주제와 관련 있는지 판단하세요. 이전 대화가 주제와 관련 있어도 최신 발언이 전혀 다른 잡담·낙서·반복이면 onTopic=false로 하고, 혼내지 말고 현재 주제로 돌아오는 문장 틀과 질문을 제안하세요. 관련 발언이면 onTopic=true로 표시하세요. 상대 학생이나 팀을 겨냥한 욕설·비하·조롱·인신공격은 personalAttack=true로 분류하고 공개 발언으로 권하지 마세요. 사람 자체가 아니라 상대의 주장과 근거를 비판하는 정중한 반론은 허용하세요. 정치·사회적으로 민감한 쟁점이라는 이유만으로 onTopic=false 처리하거나 답변을 피하지 마세요. 그런 주제는 특정 정당·후보를 지지하지 않는 중립적 학습 설명으로 다루고, 충돌하는 기본권과 공익, 찬반의 법적 근거를 균형 있게 비교하세요. 선거운동·정파적 설득이나 영토 쟁점의 선동적 주장을 작성하지 말고, 그런 요청은 중립적 헌법·법령 설명으로 돌려주세요. selectedConstitutionCard는 조항을 찾도록 돕는 짧은 학습용 요약이지 정확한 원문 인용이 아닙니다. officialSources에 원문 근거가 없으면 요약을 법 조문처럼 인용하지 말고 국가법령정보센터 원문에서 확인하도록 안내하세요. 학생의 입장을 대신 정하지 말고 구체적인 칭찬과 보완점, 다음 질문을 한국어 존댓말로 답하세요. 창의성과 논리성은 실제 발언에 근거해 평가하고 빈 칭찬은 하지 마세요. 제공된 officialSources만 근거로 인용하며 조항·사실·판례를 만들지 마세요. 헌법 원문과 쉬운 생활법령 설명을 구별하고 법적 결론을 단정하지 마세요. 학생들이 서로 반론과 질문을 주고받도록 도와주세요. 개인정보나 실명 공개를 부추기지 마세요.` },
         ...history.map(item => ({ role: item.role === 'model' ? 'assistant' : 'user', content: item.text })),
         { role: 'user', content: JSON.stringify(context) }
       ],
@@ -279,11 +295,12 @@ async function generateFeedback({ message, history, stage, position, topic, arti
             properties: {
             feedback: { type: 'string' },
             onTopic: { type: 'boolean' },
+            personalAttack: { type: 'boolean' },
             creative: { type: 'boolean' },
               logical: { type: 'boolean' },
               sourceIds: { type: 'array', items: { type: 'string' } }
             },
-            required: ['feedback', 'onTopic', 'creative', 'logical', 'sourceIds'],
+            required: ['feedback', 'onTopic', 'personalAttack', 'creative', 'logical', 'sourceIds'],
             additionalProperties: false
           }
         }
@@ -295,14 +312,18 @@ async function generateFeedback({ message, history, stage, position, topic, arti
   const output = data?.choices?.[0]?.message?.content;
   if (!output) throw new Error('empty_ai_response');
   const parsed = JSON.parse(output);
-  const onTopic = Boolean(parsed.onTopic);
+  const personalAttack = Boolean(parsed.personalAttack);
+  const onTopic = Boolean(parsed.onTopic) && !personalAttack;
   const citedSources = sources.filter(source => parsed.sourceIds?.includes(source.id));
   return {
     aiConnected: true,
-      feedback: onTopic
+      feedback: personalAttack
+      ? '상대방을 욕하거나 낮춰 부르는 표현은 토론 발언으로 기록하지 않아요. 사람을 평가하기보다 상대의 주장과 근거를 반박해 주세요. “상대의 ___ 주장에는 ___ 근거로 다른 생각을 제시합니다.”처럼 바꿔볼까요?'
+      : onTopic
       ? String(parsed.feedback || '근거를 바탕으로 생각을 한 번 더 다듬어 볼까요?')
       : `잠깐, 이 글은 오늘 주제와 조금 거리가 있어요. 이번 토론은 “${topic.title}”입니다. “이 상황에서 어떤 권리가 관련될까요?” 또는 “서로 다른 권리를 함께 지킬 방법은 무엇일까요?”로 다시 생각해볼까요?`,
     onTopic,
+    personalAttack,
     creative: onTopic && Boolean(parsed.creative),
     logical: onTopic && Boolean(parsed.logical),
     sources: onTopic ? citedSources.length ? citedSources : sources.slice(0, 5) : []
@@ -443,6 +464,7 @@ async function handleApi(request, response, url) {
       }
       const history = roomPosts.filter(item => item.topicUpdatedAt === classTopic.updatedAt).slice(-8).map(item => ({ role: 'user', text: `${item.side} · ${item.body}` }));
       const moderation = await generateFeedback({ message: post.body, history, stage: 'middle', position: side, topic: classTopic });
+      if (moderation.personalAttack) return json(response, 422, { error: 'personal_attack', feedback: moderation.feedback });
       if (!moderation.onTopic) return json(response, 422, { error: 'off_topic', feedback: moderation.feedback });
       const member = recordClassActivity(post.name, body.persona, 'participation', { source: 'public-debate', text: post.body });
       post.persona = member.persona;
