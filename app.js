@@ -135,9 +135,13 @@ const constitutionCardsData = [
   [129, '헌법개정안의 공고', '제안된 헌법개정안을 대통령이 20일 이상 공고하도록 합니다.'],
   [130, '헌법개정안의 의결과 국민투표', '국회 의결과 국민투표를 거쳐 헌법개정이 확정되는 절차를 정합니다.']
 ];
-const defaultClassTopic = { title: '학교의 휴대전화 일괄 수거는 정당한가?', scenario: '학교의 수업 집중과 생활지도를 위한 휴대전화 보관이 학생의 사생활·표현의 자유와 어떻게 균형을 이루어야 하는지 토론합니다.' };
+const defaultClassTopic = { title: '학교의 휴대전화 일괄 수거는 정당한가?', scenario: '학교의 수업 집중과 생활지도를 위한 휴대전화 보관이 학생의 사생활·표현의 자유와 어떻게 균형을 이루어야 하는지 토론합니다.', sources: [] };
 let classTopic = { ...defaultClassTopic };
 let classTopicLoaded = false;
+let topicFormDirty = false;
+let topicDraftSources = [];
+let topicSuggestionPromise = null;
+let topicSuggestionSequence = 0;
 const zodiacPersonas = ['rat', 'ox', 'tiger', 'rabbit', 'dragon', 'snake', 'horse', 'goat', 'monkey', 'rooster', 'dog', 'pig'];
 const legacyPersonas = { owl: 'rooster', fox: 'tiger', turtle: 'ox', whale: 'dragon' };
 function normalizePersona(persona) { return legacyPersonas[persona] || (zodiacPersonas.includes(persona) ? persona : 'rat'); }
@@ -651,18 +655,40 @@ function setAiStatus(status) {
   element.innerHTML = `<i></i>${label}`;
 }
 
+function renderTopicSources(sources) {
+  const container = document.querySelector('#topicSources');
+  container.innerHTML = '';
+  (sources || []).slice(0, 5).forEach(source => {
+    const link = document.createElement('a');
+    link.href = source.url;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    link.textContent = source.title;
+    container.append(link);
+  });
+}
+
+function hasConstitutionTopicTerms(title, scenario) {
+  return String(title).trim().length >= 6 && /헌법|권리|기본권|평등|표현|사생활|개인정보|교육|학교|학생|휴대|자유|존엄|차별|제한|인권|공익|노동|종교|언론|집회|양심|참정|선거|정당|대통령|국회|탄핵|공직|권력분립|영토|재산|주거|신체|보건|환경/i.test(`${title} ${scenario}`);
+}
+
 function applyClassTopic(topic) {
   const firstLoad = !classTopicLoaded;
   const changed = topic.title !== classTopic.title || topic.scenario !== classTopic.scenario;
-  classTopic = { title: topic.title || defaultClassTopic.title, scenario: topic.scenario || '' };
+  classTopic = { title: topic.title || defaultClassTopic.title, scenario: topic.scenario || '', sources: topic.sources || [] };
+  topicDraftSources = classTopic.sources;
   const titleInput = document.querySelector('#topicTitle');
   const scenarioInput = document.querySelector('#topicScenario');
-  if (document.activeElement !== titleInput) titleInput.value = classTopic.title;
-  if (document.activeElement !== scenarioInput) scenarioInput.value = classTopic.scenario;
+  const editingTopic = topicFormDirty || document.activeElement === titleInput || document.activeElement === scenarioInput;
+  if (!editingTopic) {
+    titleInput.value = classTopic.title;
+    scenarioInput.value = classTopic.scenario;
+  }
   document.querySelector('#heroTopic').textContent = `오늘의 주제 · ${classTopic.title}`;
   document.querySelector('#sideCaseTitle').textContent = classTopic.title;
   document.querySelector('#sideCaseContext').textContent = classTopic.scenario;
   document.querySelector('.room-panel .panel-caption').textContent = `“${classTopic.title}”에 대한 발언을 AI가 확인한 뒤 친구들과 공유해요.`;
+  renderTopicSources(topicDraftSources);
   if (changed) {
     state.stage = 'start';
     state.messages = [];
@@ -686,15 +712,72 @@ async function pollClassTopic() {
   } catch {}
 }
 
+async function requestTopicSuggestion(titleValue = document.querySelector('#topicTitle').value, notes = document.querySelector('#topicScenario').value, force = false) {
+  const title = String(titleValue || '').trim();
+  const scenarioInput = document.querySelector('#topicScenario');
+  const originalNotes = String(notes || '').trim();
+  const status = document.querySelector('#topicStatus');
+  const button = document.querySelector('#suggestTopicButton');
+  if (!hasConstitutionTopicTerms(title, originalNotes)) {
+    status.classList.add('error');
+    status.textContent = '토론 주제에 헌법이나 기본권 쟁점을 드러내 주세요. 예: “헌법상 ___의 자유는 어디까지 보장될까요?”';
+    return null;
+  }
+  const version = ++topicSuggestionSequence;
+  const articles = getTopicFlightArticles({ title, scenario: originalNotes }).map(card => ({ number: card.number, title: card.title, summary: card.short }));
+  button.disabled = true;
+  status.classList.remove('error');
+  status.textContent = 'AI가 상황과 헌법 근거를 살펴보고 있어요...';
+  try {
+    const response = await fetch('/api/class/topic/suggest', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title, scenario: originalNotes, articles })
+    });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error || 'AI 주제 제안을 받지 못했어요.');
+    if (version !== topicSuggestionSequence) return null;
+    const related = (result.relatedArticles || []).map(article => `제${article.number}조 ${article.title}`).join(' · ');
+    const questions = (result.questions || []).map((question, index) => `${index + 1}. ${question}`).join('\n');
+    const proposal = `상황: ${result.situation}\n\n토론 범위: ${result.scope}\n\n관련 헌법 조항: ${related}\n\n토론 질문:\n${questions}`;
+    const teacherHasEdited = !force && scenarioInput.value.trim() && scenarioInput.value.trim() !== originalNotes;
+    if (!teacherHasEdited) scenarioInput.value = proposal;
+    topicDraftSources = result.sources || [];
+    renderTopicSources(topicDraftSources);
+    status.classList.remove('error');
+    status.textContent = teacherHasEdited ? 'AI 제안을 준비했어요. 선생님이 입력 중인 설명은 그대로 두었습니다.' : 'AI가 상황·토론 범위·관련 조항을 제안했어요. 수정한 뒤 저장할 수 있습니다.';
+    return proposal;
+  } catch (error) {
+    if (version === topicSuggestionSequence) {
+      status.classList.add('error');
+      status.textContent = error.message;
+    }
+    return null;
+  } finally {
+    if (version === topicSuggestionSequence) button.disabled = false;
+  }
+}
+
 async function saveClassTopic() {
   const title = document.querySelector('#topicTitle').value.trim();
-  const scenario = document.querySelector('#topicScenario').value.trim();
+  if (topicSuggestionPromise) {
+    const generated = await topicSuggestionPromise;
+    topicSuggestionPromise = null;
+    if (!generated && !document.querySelector('#topicScenario').value.trim()) return;
+  }
+  let scenario = document.querySelector('#topicScenario').value.trim();
   const status = document.querySelector('#topicStatus');
-  const constitutionTerms = /헌법|권리|기본권|평등|표현|사생활|개인정보|교육|학교|학생|휴대|자유|존엄|차별|제한|인권|공익|노동|종교|언론|집회|양심|참정|재산|주거|신체|보건|환경/i;
-  if (title.length < 6 || !constitutionTerms.test(`${title} ${scenario}`)) {
+  if (!hasConstitutionTopicTerms(title, scenario)) {
     status.classList.add('error');
     status.textContent = '헌법의 권리나 기본권 쟁점과 연결된 주제를 입력해 주세요.';
     return;
+  }
+  if (!scenario) {
+    topicSuggestionPromise = requestTopicSuggestion(title, '', false);
+    const generated = await topicSuggestionPromise;
+    topicSuggestionPromise = null;
+    if (!generated) return;
+    scenario = document.querySelector('#topicScenario').value.trim();
   }
   const button = document.querySelector('#saveTopicButton');
   button.disabled = true;
@@ -704,10 +787,11 @@ async function saveClassTopic() {
     const response = await fetch('/api/class/topic', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title, scenario })
+      body: JSON.stringify({ title, scenario, sources: topicDraftSources })
     });
     const result = await response.json();
     if (!response.ok) throw new Error(result.error || '주제를 저장하지 못했어요.');
+    topicFormDirty = false;
     applyClassTopic(result.topic);
     status.classList.remove('error');
     status.textContent = '새 주제가 학급 전체와 토론 코치에 적용됐어요.';
@@ -1203,6 +1287,26 @@ document.querySelector('#applyProfile').addEventListener('click', () => {
   toast(`${activeStudent} 아바타로 참여를 시작해요.`);
 });
 document.querySelector('#saveTopicButton').addEventListener('click', saveClassTopic);
+document.querySelector('#topicTitle').addEventListener('input', () => { topicFormDirty = true; });
+document.querySelector('#topicScenario').addEventListener('input', () => { topicFormDirty = true; });
+document.querySelector('#suggestTopicButton').addEventListener('click', () => {
+  topicSuggestionPromise = requestTopicSuggestion(document.querySelector('#topicTitle').value, document.querySelector('#topicScenario').value, true);
+});
+document.querySelector('#topicTitle').addEventListener('change', event => {
+  const title = event.target.value.trim();
+  const scenarioInput = document.querySelector('#topicScenario');
+  if (!title || title === classTopic.title) return;
+  if (!scenarioInput.value.trim() || scenarioInput.value.trim() === classTopic.scenario.trim()) {
+    scenarioInput.value = '';
+    topicDraftSources = [];
+    renderTopicSources(topicDraftSources);
+    topicSuggestionPromise = requestTopicSuggestion(title, '', false);
+  } else {
+    topicDraftSources = [];
+    renderTopicSources(topicDraftSources);
+    document.querySelector('#topicStatus').textContent = '새 주제와 함께 직접 작성한 범위를 적용할 수 있어요. AI 제안도 사용할 수 있습니다.';
+  }
+});
 document.querySelector('#personaSelect').addEventListener('change', event => {
   state.persona = event.target.value;
   persist();
@@ -1296,8 +1400,8 @@ function flightArticle(number) {
   return row ? { number: row[0], title: `제${row[0]}조 · ${row[1]}`, short: row[2] } : null;
 }
 
-function getTopicFlightArticles() {
-  const text = `${classTopic.title} ${classTopic.scenario}`;
+function getTopicFlightArticles(topic = classTopic) {
+  const text = `${topic.title} ${topic.scenario}`;
   const numbers = [];
   if (/사생활|개인정보|휴대전화|스마트폰|촬영|통신/.test(text)) numbers.push(17, 18, 16, 12, 37);
   if (/표현|언론|발언|게시|집회|시위/.test(text)) numbers.push(21, 22, 11, 37);

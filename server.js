@@ -170,6 +170,10 @@ function isDebateTopicRelated(message, topic) {
   return topicMatch || /헌법|제\s*\d+조|권리|기본권|찬성|반대|평등|차별|존엄|공익|발언|토론|발표|근거|상대|반론|제한|막막|모르겠|어떻게|도와|궁금|첫 문장/.test(message);
 }
 
+function isConstitutionalTopic(title, scenario) {
+  return title.length >= 6 && /헌법|권리|기본권|평등|표현|사생활|개인정보|교육|학교|학생|휴대|자유|존엄|차별|제한|인권|공익|노동|종교|언론|집회|양심|참정|선거|정당|대통령|국회|탄핵|공직|권력분립|영토|재산|주거|신체|보건|환경/i.test(`${title} ${scenario}`);
+}
+
 function hasPersonalAttack(message) {
   return /(?:씨발|시발|ㅅㅂ|병신|개새끼|닥쳐|꺼져|찐따|미친(?:년|놈)|쓸모없(?:다|는|어)|니가|너같은|상대방은|반대팀은|찬성팀은).{0,18}(?:병신|멍청|바보|무식|한심|쓰레기|찐따|개소리|쓸모없|꺼져)|(?:병신|개새끼|닥쳐|꺼져|찐따|미친(?:년|놈))/.test(message);
 }
@@ -241,7 +245,9 @@ async function generateFeedback({ message, history, stage, position, topic, arti
       feedback: '상대방을 욕하거나 낮춰 부르는 표현은 토론 발언으로 기록하지 않아요. 사람을 평가하기보다 상대의 주장과 근거를 반박해 주세요. “상대의 ___ 주장에는 ___ 근거로 다른 생각을 제시합니다.”처럼 바꿔볼까요?'
     };
   }
-  const sources = await retrieveSources(`${topic.title} ${topic.scenario} ${message}`.slice(0, 360));
+  const retrievedSources = await retrieveSources(`${topic.title} ${topic.scenario} ${message}`.slice(0, 360));
+  const sourceMap = new Map([...(topic.sources || []), ...retrievedSources].filter(source => source?.url).map(source => [source.url, source]));
+  const sources = [...sourceMap.values()].slice(0, 9);
   const key = process.env.UPSTAGE_API_KEY;
   if (!key) {
     const onTopic = isDebateTopicRelated(message, topic);
@@ -392,17 +398,70 @@ async function handleApi(request, response, url) {
     }
   }
   if (request.method === 'GET' && url.pathname === '/api/class/topic') return json(response, 200, { topic: classTopic });
+  if (request.method === 'POST' && url.pathname === '/api/class/topic/suggest') {
+    try {
+      const body = await readBody(request, 10000);
+      const title = String(body.title || '').trim().slice(0, 160);
+      const scenario = String(body.scenario || '').trim().slice(0, 700);
+      const articleCards = (Array.isArray(body.articles) ? body.articles : []).map(article => ({ number: Number(article.number), title: String(article.title || '').slice(0, 100), summary: String(article.summary || '').slice(0, 220) })).filter(article => Number.isInteger(article.number) && article.number >= 1 && article.number <= 130 && article.title && article.summary).slice(0, 16);
+      if (!isConstitutionalTopic(title, scenario) || articleCards.length < 4) return json(response, 400, { error: '토론 주제에 헌법·권리 쟁점을 포함해 주세요.' });
+      if (!process.env.UPSTAGE_API_KEY) return json(response, 503, { error: 'Upstage 연결을 확인할 수 없어요.' });
+      const sources = await retrieveSources(`${title} ${scenario}`);
+      const upstream = await fetch('https://api.upstage.ai/v1/chat/completions', {
+        method: 'POST',
+        signal: AbortSignal.timeout(20000),
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${process.env.UPSTAGE_API_KEY}` },
+        body: JSON.stringify({
+          model: 'solar-mini4',
+          messages: [
+            { role: 'system', content: '대한민국 헌법 모의법정 교사를 돕는 주제 설계자입니다. 제공된 teacherTopic에 맞는 학생 친화적인 생활 속 상황과 중립적 토론 범위를 제안하세요. 양쪽의 권리·공익과 쟁점이 드러나게 하고, 학생이 어느 한 입장을 택하도록 유도하지 마세요. 정치·사회적으로 민감한 주제도 정파적 설득 없이 헌법·법령 관점으로 균형 있게 제시하세요. territorial topics는 선동 없이 법과 사실을 중립적으로 살피는 질문으로 다루세요. relatedArticleNumbers는 제공된 articleCards의 번호만 사용하고, summaries는 쉬운 학습용 요약이지 정확한 조문 인용이 아님을 기억하세요. situation 1~2문장, scope 1~2문장, questions는 학생이 양쪽에서 생각할 짧은 질문 2개를 작성하세요.' },
+            { role: 'user', content: JSON.stringify({ teacherTopic: { title, scenario }, articleCards, officialSources: sources.map(({ title: sourceTitle, url, excerpt }) => ({ title: sourceTitle, url, excerpt: excerpt.slice(0, 700) })) }) }
+          ],
+          temperature: 0.35,
+          max_tokens: 1000,
+          response_format: {
+            type: 'json_schema',
+            json_schema: {
+              name: 'constitutional_topic_setup',
+              strict: true,
+              schema: {
+                type: 'object',
+                properties: { situation: { type: 'string' }, scope: { type: 'string' }, relatedArticleNumbers: { type: 'array', items: { type: 'integer' } }, questions: { type: 'array', items: { type: 'string' } } },
+                required: ['situation', 'scope', 'relatedArticleNumbers', 'questions'],
+                additionalProperties: false
+              }
+            }
+          }
+        })
+      });
+      if (!upstream.ok) return json(response, 502, { error: 'AI 주제 제안을 받지 못했어요. 다시 시도해 주세요.' });
+      const payload = await upstream.json();
+      const parsed = JSON.parse(payload?.choices?.[0]?.message?.content || '{}');
+      const allowedArticles = new Set(articleCards.map(article => article.number));
+      const relatedArticles = [...new Set((parsed.relatedArticleNumbers || []).map(Number))].filter(number => allowedArticles.has(number)).slice(0, 5).map(number => articleCards.find(article => article.number === number));
+      if (!parsed.situation || !parsed.scope || relatedArticles.length < 2) return json(response, 502, { error: 'AI가 근거 조항을 충분히 찾지 못했어요. 토론 주제를 더 구체적으로 적어주세요.' });
+      return json(response, 200, { situation: String(parsed.situation).slice(0, 500), scope: String(parsed.scope).slice(0, 500), relatedArticles, questions: (parsed.questions || []).slice(0, 3).map(question => String(question).slice(0, 180)), sources });
+    } catch {
+      return json(response, 502, { error: 'AI 주제 제안을 만드는 중 연결 오류가 발생했어요.' });
+    }
+  }
   if (request.method === 'POST' && url.pathname === '/api/class/topic') {
     try {
       const body = await readBody(request, 3000);
       const title = String(body.title || '').trim().slice(0, 160);
       const scenario = String(body.scenario || '').trim().slice(0, 700);
-      if (title.length < 6 || !/헌법|권리|기본권|평등|표현|사생활|개인정보|교육|학교|학생|휴대|자유|존엄|차별|제한|인권|공익|노동|종교|언론|집회|양심|참정|재산|주거|신체|보건|환경/i.test(`${title} ${scenario}`)) {
+      if (!isConstitutionalTopic(title, scenario)) {
         return json(response, 400, { error: '헌법의 권리나 기본권 쟁점과 연결되는 주제를 입력해 주세요.' });
       }
+      const sources = (Array.isArray(body.sources) ? body.sources : []).map(source => {
+        let url = '';
+        try { url = new URL(String(source.url || '')).href; } catch {}
+        if (!url.startsWith('https://www.law.go.kr/') && !url.startsWith('https://www.easylaw.go.kr/')) return null;
+        return { title: String(source.title || '').slice(0, 120), url, excerpt: String(source.excerpt || '').slice(0, 400), id: String(source.id || '').slice(0, 60) };
+      }).filter(Boolean).slice(0, 6);
       const changed = title !== classTopic.title || scenario !== classTopic.scenario;
       if (changed) roomPosts.length = 0;
-      classTopic = { title, scenario, updatedAt: Date.now() };
+      classTopic = { title, scenario, sources, updatedAt: Date.now() };
       return json(response, 200, { topic: classTopic });
     } catch {
       return json(response, 400, { error: '주제 저장에 실패했습니다.' });
