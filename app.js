@@ -156,6 +156,8 @@ let state = { ...createDefaultState(), ...(profiles[activeStudent] || (activeStu
 state.persona = normalizePersona(state.persona);
 state.presentations = (state.presentations || []).map((item, index) => typeof item === 'number' ? { id: `legacy-${item}-${index}`, at: item, slot: index, text: '' } : item);
 if (!state.thoughtHistory?.length && state.messages?.length) state.thoughtHistory = state.messages.map((message, index) => ({ id: `old-${index}`, type: message.who === 'user' ? 'question' : 'coach', text: message.text, at: Date.now(), stage: state.stage }));
+document.querySelector('#profileName').value = activeStudent;
+document.querySelector('#personaSelect').value = state.persona;
 let teacherMode = localStorage.getItem('courtroom-teacher-mode') === 'true';
 const chatLog = document.querySelector('#chatLog');
 const input = document.querySelector('#chatInput');
@@ -377,8 +379,6 @@ function renderCharacter(animate = false) {
   document.querySelector('#characterCount').textContent = `발표 ${presentations}회 · 참여 ${participations}회`;
   document.querySelector('#headerStudentName').textContent = activeStudent;
   document.querySelector('#headerCharacter').innerHTML = characterSvg(persona, count, presentations);
-  if (document.activeElement !== document.querySelector('#profileName')) document.querySelector('#profileName').value = activeStudent;
-  if (document.activeElement !== document.querySelector('#personaSelect')) document.querySelector('#personaSelect').value = persona;
   const roomName = document.querySelector('#roomName');
   if (!roomName.value || roomName.value === '학생') roomName.value = activeStudent;
   if (animate) {
@@ -393,10 +393,17 @@ function switchStudent(name) {
   profileReady = true;
   localStorage.setItem('courtroom-profile-ready', 'true');
   persist();
-  if (next === activeStudent) { document.querySelector('#profileName').value = next; updateEnrollmentView(); return; }
+  if (next === activeStudent) {
+    document.querySelector('#profileName').value = next;
+    document.querySelector('#personaSelect').value = state.persona;
+    updateEnrollmentView();
+    return;
+  }
   activeStudent = next;
   state = { ...createDefaultState(), ...(profiles[activeStudent] || {}) };
   state.persona = normalizePersona(state.persona);
+  document.querySelector('#profileName').value = activeStudent;
+  document.querySelector('#personaSelect').value = state.persona;
   state.presentations = (state.presentations || []).map((item, index) => typeof item === 'number' ? { id: `legacy-${item}-${index}`, at: item, slot: index, text: '' } : item);
   if (!state.thoughtHistory?.length && state.messages?.length) state.thoughtHistory = state.messages.map((message, index) => ({ id: `old-${index}`, type: message.who === 'user' ? 'question' : 'coach', text: message.text, at: Date.now(), stage: state.stage }));
   persist();
@@ -413,7 +420,14 @@ function updateEnrollmentView() {
   document.querySelector('#classroomContent').hidden = !profileReady;
   document.querySelector('#sideNav').hidden = !profileReady;
   document.querySelector('#sideCaseCard').hidden = !profileReady;
-  document.querySelector('#applyProfile').textContent = profileReady ? '참여 중 · 프로필 적용' : '이 별명으로 참여';
+  updateProfileButton();
+}
+
+function updateProfileButton() {
+  const name = document.querySelector('#profileName').value.trim();
+  const persona = document.querySelector('#personaSelect').value;
+  const changed = name !== activeStudent || persona !== state.persona;
+  document.querySelector('#applyProfile').textContent = !profileReady ? '이 별명으로 참여' : changed ? '이 프로필로 전환' : '현재 프로필 적용됨';
 }
 
 function renderClassBoard(board) {
@@ -1289,12 +1303,17 @@ document.querySelector('#applyProfile').addEventListener('click', () => {
   profileReady = true;
   localStorage.setItem('courtroom-profile-ready', 'true');
   state.persona = persona;
+  document.querySelector('#profileName').value = activeStudent;
+  document.querySelector('#personaSelect').value = state.persona;
+  updateProfileButton();
   persist();
   renderProgress();
   renderCharacter(true);
   pollClassBoard();
   toast(`${activeStudent} 아바타로 참여를 시작해요.`);
 });
+document.querySelector('#profileName').addEventListener('input', updateProfileButton);
+document.querySelector('#personaSelect').addEventListener('change', updateProfileButton);
 document.querySelector('#saveTopicButton').addEventListener('click', saveClassTopic);
 document.querySelector('#topicTitle').addEventListener('input', () => { topicFormDirty = true; });
 document.querySelector('#topicScenario').addEventListener('input', () => { topicFormDirty = true; });
@@ -1315,11 +1334,6 @@ document.querySelector('#topicTitle').addEventListener('change', event => {
     renderTopicSources(topicDraftSources);
     document.querySelector('#topicStatus').textContent = '새 주제와 함께 직접 작성한 범위를 적용할 수 있어요. AI 제안도 사용할 수 있습니다.';
   }
-});
-document.querySelector('#personaSelect').addEventListener('change', event => {
-  state.persona = event.target.value;
-  persist();
-  renderCharacter(true);
 });
 document.querySelector('#teacherToggle').addEventListener('click', () => {
   teacherMode = !teacherMode;
