@@ -437,6 +437,13 @@ async function handleApi(request, response, url) {
         at: Date.now()
       };
       if (!post.body) return json(response, 400, { error: 'empty_message' });
+      const compactBody = post.body.replace(/\s/g, '');
+      if (!/[가-힣A-Za-z]/.test(compactBody) || /^(?:ㅋ|ㅎ|ㅇ|ㄴ|ㄱ){2,}$/u.test(compactBody) || /(.)\1{5,}/u.test(compactBody)) {
+        return json(response, 422, { error: 'off_topic', feedback: `반복되거나 너무 짧은 글은 토론방에 등록하지 않았어요. “${classTopic.title}”와 연결되는 주장이나 질문을 한 문장으로 써보세요.` });
+      }
+      const history = roomPosts.filter(item => item.topicUpdatedAt === classTopic.updatedAt).slice(-8).map(item => ({ role: 'user', text: `${item.side} · ${item.body}` }));
+      const moderation = await generateFeedback({ message: post.body, history, stage: 'middle', position: side, topic: classTopic });
+      if (!moderation.onTopic) return json(response, 422, { error: 'off_topic', feedback: moderation.feedback });
       const member = recordClassActivity(post.name, body.persona, 'participation', { source: 'public-debate', text: post.body });
       post.persona = member.persona;
       post.presentations = member.presentations;

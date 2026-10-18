@@ -662,6 +662,7 @@ function applyClassTopic(topic) {
   document.querySelector('#heroTopic').textContent = `오늘의 주제 · ${classTopic.title}`;
   document.querySelector('#sideCaseTitle').textContent = classTopic.title;
   document.querySelector('#sideCaseContext').textContent = classTopic.scenario;
+  document.querySelector('.room-panel .panel-caption').textContent = `“${classTopic.title}”에 대한 발언을 AI가 확인한 뒤 친구들과 공유해요.`;
   if (changed) {
     state.stage = 'start';
     state.messages = [];
@@ -793,6 +794,21 @@ function toast(text) {
   element.textContent = text;
   element.classList.add('show');
   setTimeout(() => element.classList.remove('show'), 2500);
+}
+
+function showRoomModeration(text, kind = 'warning') {
+  let notice = document.querySelector('#roomModeration');
+  if (!notice) {
+    notice = document.createElement('div');
+    notice.id = 'roomModeration';
+    notice.className = 'room-moderation';
+    notice.setAttribute('role', 'status');
+    notice.setAttribute('aria-live', 'polite');
+    document.querySelector('#roomFeed').before(notice);
+  }
+  notice.className = `room-moderation show ${kind}`;
+  notice.textContent = text;
+  if (kind === 'success') setTimeout(() => notice.classList.remove('show'), 3500);
 }
 
 function nextPresentationSlot() {
@@ -1237,16 +1253,27 @@ document.querySelector('#roomForm').addEventListener('submit', async event => {
   const text = field.value.trim();
   if (!text) return;
   if (!profileReady) { toast('발언 전에 먼저 별명을 설정해 주세요.'); document.querySelector('#profileName').focus(); return; }
+  if (isLowEffortInput(text)) {
+    showRoomModeration(`“${classTopic.title}”와 연결되는 주장이나 질문을 조금 더 구체적으로 적어주세요. 예: “저는 ___라고 생각해요. 이유는 ___입니다.”`);
+    return;
+  }
   const button = document.querySelector('.room-send');
+  const originalLabel = button.textContent;
   button.disabled = true;
+  button.textContent = 'AI가 주제를 확인 중…';
   try {
     const response = await fetch('/api/room', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ side: document.querySelector('#roomSide').value, name: document.querySelector('#roomName').value, persona: state.persona, body: text, replyTo })
     });
-    if (!response.ok) throw new Error('발언을 등록하지 못했어요. 다시 시도해 주세요.');
     const result = await response.json();
+    if (response.status === 422) {
+      showRoomModeration(result.feedback || `이 발언은 “${classTopic.title}”와 연결해 다시 적어볼까요?`);
+      field.focus();
+      return;
+    }
+    if (!response.ok) throw new Error(result.error || '주제 확인에 실패했어요. 잠시 뒤 다시 시도해 주세요.');
     if (document.querySelector('#roomName').value.trim() === activeStudent) {
       state.participations = (state.participations || 0) + 1;
       state.thoughtHistory.push({ id: `room-${result.post.id}`, type: 'public-debate', text, side: result.post.side, at: result.post.at, stage: state.stage });
@@ -1255,12 +1282,13 @@ document.querySelector('#roomForm').addEventListener('submit', async event => {
       renderCharacter(true);
     }
     field.value = '';
+    showRoomModeration('주제와 연결된 발언이에요. 학급 토론에 등록했어요.', 'success');
     replyTo = '';
     document.querySelector('#replying').classList.remove('show');
     await pollRoom();
     await pollClassBoard();
-  } catch (error) { toast(error.message); }
-  finally { button.disabled = false; }
+  } catch (error) { showRoomModeration(error.message, 'warning'); }
+  finally { button.disabled = false; button.textContent = originalLabel; }
 });
 
 function flightArticle(number) {
@@ -1951,6 +1979,7 @@ document.querySelector('#tetrisAskCoach').addEventListener('click', () => {
 
 initFlightControls();
 setFlightLane(1);
+document.querySelector('#roomStatus').innerHTML = '<i></i>AI 주제 확인';
 renderStage();
 renderProgress();
 renderChat();
