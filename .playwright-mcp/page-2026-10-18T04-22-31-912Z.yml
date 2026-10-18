@@ -1,0 +1,407 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - complementary [ref=e3]:
+      - generic [ref=e4]:
+        - img [ref=e6]
+        - generic [ref=e8]:
+          - generic [ref=e9]: 헌법의 법정
+          - generic [ref=e10]: CLASSROOM DEBATE
+      - generic [ref=e11]: 오늘의 수업
+      - navigation [ref=e12]:
+        - button "토론 도우미" [ref=e13] [cursor=pointer]:
+          - img [ref=e14]
+          - text: 토론 도우미
+        - button "내 생각 노트" [ref=e17] [cursor=pointer]:
+          - img [ref=e18]
+          - text: 내 생각 노트
+        - button "헌법 조항 카드" [ref=e20] [cursor=pointer]:
+          - img [ref=e21]
+          - text: 헌법 조항 카드
+      - generic [ref=e24]:
+        - generic [ref=e25]: TODAY'S CASE · 01
+        - heading "학교의 휴대전화 일괄 수거는 정당한가?" [level=3] [ref=e26]
+        - paragraph [ref=e27]: 학교의 수업 집중과 생활지도를 위한 휴대전화 보관이 학생의 사생활·표현의 자유와 어떻게 균형을 이루어야 하는지 토론합니다.
+    - main [ref=e28]:
+      - generic [ref=e29]:
+        - generic [ref=e30]:
+          - text: 모의법정 수업 /
+          - strong [ref=e31]: 1조 · 토론실
+        - generic [ref=e32]:
+          - generic [ref=e33]: 학생
+          - img "개띠 토론 아바타" [ref=e35]
+      - generic [ref=e47]:
+        - generic [ref=e48]:
+          - generic [ref=e49]: A CONSTITUTIONAL DEBATE
+          - heading "생각을 세우고, 근거로 말하기" [level=1] [ref=e50]
+          - paragraph [ref=e51]: 정답을 찾기보다, 서로 다른 권리를 살펴보며 내 논리를 만들어 보세요.
+        - generic [ref=e52]: 오늘의 주제 · 학교의 휴대전화 일괄 수거는 정당한가?
+      - group [ref=e53]:
+        - generic "교사 수업 설정 · 오늘의 헌법 토론 주제" [ref=e54] [cursor=pointer]
+        - paragraph [ref=e55]: 주제를 저장하면 수업 참가자와 토론 코치에 함께 적용됩니다. 정치·사회 쟁점도 특정 입장을 권하지 않고 헌법·법령에 근거해 균형 있게 다룹니다.
+        - generic [ref=e56]:
+          - generic [ref=e57]:
+            - text: 토론 주제
+            - textbox "토론 주제" [ref=e58]:
+              - /placeholder: "예: 학교의 휴대전화 일괄 수거는 정당한가?"
+              - text: 학교의 휴대전화 일괄 수거는 정당한가?
+          - generic [ref=e59]:
+            - text: 상황과 토론 범위
+            - textbox "상황과 토론 범위" [ref=e60]:
+              - /placeholder: 어떤 생활 속 상황과 기본권이 부딪히는지 설명해 주세요.
+              - text: 학교의 수업 집중과 생활지도를 위한 휴대전화 보관이 학생의 사생활·표현의 자유와 어떻게 균형을 이루어야 하는지 토론합니다.
+        - generic [ref=e61]:
+          - status [ref=e62]: "현재 주제: 학교의 휴대전화 일괄 수거는 정당한가?"
+          - button "주제 저장 · 수업에 적용" [ref=e63] [cursor=pointer]
+      - region "학생 참여 프로필" [ref=e64]:
+        - generic [ref=e65]:
+          - strong [ref=e66]: 학생 참여 프로필
+          - generic [ref=e67]: 10자 이내 별명과 출생 띠를 선택하세요. 발표·질문·코치 답변 기록은 학급 참여 흐름에 함께 보여요. 실명 대신 별명을 사용해요.
+        - generic [ref=e68]:
+          - text: 내 별명
+          - textbox "학생 별명" [ref=e69]:
+            - /placeholder: "예: 별빛"
+            - text: 학생
+        - generic [ref=e70]:
+          - text: 내 출생 띠
+          - combobox "출생 띠 아바타" [ref=e71]:
+            - option "쥐띠"
+            - option "소띠"
+            - option "호랑이띠"
+            - option "토끼띠"
+            - option "용띠"
+            - option "뱀띠"
+            - option "말띠"
+            - option "양띠"
+            - option "원숭이띠"
+            - option "닭띠"
+            - option "개띠" [selected]
+            - option "돼지띠"
+        - button "이 별명으로 참여" [ref=e72] [cursor=pointer]
+      - region "오늘의 학급 토론 요약" [ref=e73]:
+        - article [ref=e74]:
+          - img "개띠 토론 아바타" [ref=e76]
+          - generic [ref=e88]:
+            - text: 나의 토론 레이스
+            - strong [ref=e89]: 학생 · 토론 아바타
+            - generic [ref=e90]: 발표 0/3 · 참여 0/3 · 레이스 0%
+        - generic [ref=e92]:
+          - article [ref=e93]:
+            - img [ref=e95]
+            - generic [ref=e98]: 참여 학생
+            - strong [ref=e99]: "4"
+          - article [ref=e100]:
+            - img [ref=e102]
+            - generic [ref=e105]: 발표 누적
+            - strong [ref=e106]: "0"
+          - article [ref=e107]:
+            - img [ref=e109]
+            - generic [ref=e112]: 토론 참여
+            - strong [ref=e113]: "3"
+          - article [ref=e114]:
+            - img [ref=e116]
+            - generic [ref=e118]: 도움 요청
+            - strong [ref=e119]: "0"
+      - tablist "토론 단계" [ref=e120]:
+        - tab "01 토론 시작 전 쟁점과 입장 정하기" [ref=e121] [cursor=pointer]:
+          - generic [ref=e122]: "01"
+          - generic [ref=e123]:
+            - text: 토론 시작 전
+            - text: 쟁점과 입장 정하기
+        - tab "02 토론 진행 중 근거와 반론 다듬기" [ref=e124] [cursor=pointer]:
+          - generic [ref=e125]: "02"
+          - generic [ref=e126]:
+            - text: 토론 진행 중
+            - text: 근거와 반론 다듬기
+        - tab "03 토론 마무리 핵심 주장 정리하기" [ref=e127] [cursor=pointer]:
+          - generic [ref=e128]: "03"
+          - generic [ref=e129]:
+            - text: 토론 마무리
+            - text: 핵심 주장 정리하기
+      - generic [ref=e130]:
+        - region "토론 코치" [ref=e131]:
+          - generic [ref=e132]:
+            - generic [ref=e133]:
+              - heading "나의 토론 코치" [level=2] [ref=e134]
+              - paragraph [ref=e135]: "오늘의 주제: 학교의 휴대전화 일괄 수거는 정당한가?"
+            - generic [ref=e136]: Upstage Solar 실시간 연결
+          - generic [ref=e139]:
+            - img [ref=e141]
+            - generic [ref=e143]:
+              - generic [ref=e144]: 잠시 생각이 멈췄나요? 한 문장이 어렵다면 “저는 ___ 쪽에 조금 더 가까워요. 왜냐하면 ___ 때문이에요”처럼 빈칸부터 채워보세요.
+              - generic [ref=e145]: 공식 근거 확인
+          - generic [ref=e146]:
+            - button "이 주제에 찬성하는 이유를 정리해줘요" [ref=e147] [cursor=pointer]
+            - button "이 주제에 반대하는 이유를 정리해줘요" [ref=e148] [cursor=pointer]
+            - button "관련 헌법 조항을 찾아줘요" [ref=e149] [cursor=pointer]
+          - generic [ref=e150]:
+            - generic [ref=e151]:
+              - textbox "토론 코치에게 보낼 내용" [ref=e152]:
+                - /placeholder: 내 생각이나 궁금한 점을 적어보세요
+              - button "보내기" [ref=e153] [cursor=pointer]:
+                - img [ref=e154]
+            - generic [ref=e156]: 주제 관련 발언과 코치 답변은 학급 참여 기록에서 함께 볼 수 있어요. 반복·무관한 글은 토론으로 되돌립니다. 개인정보나 실명은 입력하지 마세요.
+        - generic [ref=e157]:
+          - generic [ref=e158]:
+            - generic [ref=e159]:
+              - heading "나의 발표 기록" [level=2] [ref=e160]
+              - generic [ref=e161]: 0 / 3 발표
+            - paragraph [ref=e162]: 발표 기준을 채우고, 내 토론 아바타도 성장시켜 보세요.
+            - generic [ref=e163]:
+              - generic [ref=e164]:
+                - img "개띠 토론 아바타" [ref=e166]
+                - generic [ref=e178]: LV 0
+              - generic [ref=e179]:
+                - text: 내 토론 아바타
+                - strong [ref=e180]: 토론 아바타
+                - generic [ref=e181]: 시작 단계
+                - generic [ref=e182]: 첫 발표를 기다리고 있어요.
+              - generic [ref=e183]:
+                - generic [ref=e184]: 발표 0회 · 참여 0회
+                - strong [ref=e185]: 발표할 때마다 쑥쑥 성장!
+            - generic [ref=e187]:
+              - generic [ref=e188]: 만점 기준 발표 진행도
+              - generic [ref=e189]: 0%
+            - generic [ref=e190]:
+              - generic [ref=e191]:
+                - button "1번째 발표 미완료, 눌러 발표 기록" [ref=e192] [cursor=pointer]
+                - generic [ref=e193]: 첫 발표 · 입장과 주장
+                - generic [ref=e194]: 기록 전
+              - generic [ref=e195]:
+                - button "2번째 발표 미완료, 눌러 발표 기록" [ref=e196] [cursor=pointer]
+                - generic [ref=e197]: 두 번째 · 근거와 반론
+                - generic [ref=e198]: 기록 전
+              - generic [ref=e199]:
+                - button "3번째 발표 미완료, 눌러 발표 기록" [ref=e200] [cursor=pointer]
+                - generic [ref=e201]: 세 번째 · 최종 정리
+                - generic [ref=e202]: 기록 전
+            - button "+ 발표 기록하기" [ref=e203] [cursor=pointer]
+            - generic [ref=e204]:
+              - generic [ref=e205]: 만점 준비 기준
+              - generic [ref=e206]:
+                - generic [ref=e207]: 발표 3회
+                - generic [ref=e208]: 창의적 생각
+                - generic [ref=e209]: 논리적 근거
+          - generic [ref=e210]:
+            - heading "생각이 막힐 때" [level=2] [ref=e211]
+            - generic [ref=e212]:
+              - button "첫 문장 도와줘 부담 없이 말문을 열어봐요" [ref=e213] [cursor=pointer]:
+                - img [ref=e215]
+                - generic [ref=e218]:
+                  - generic [ref=e219]: 첫 문장 도와줘
+                  - text: 부담 없이 말문을 열어봐요
+              - button "내 생각 정리하기 주장·이유·예시로 구조화해요" [ref=e220] [cursor=pointer]:
+                - img [ref=e222]
+                - generic [ref=e225]:
+                  - generic [ref=e226]: 내 생각 정리하기
+                  - text: 주장·이유·예시로 구조화해요
+              - button "반대쪽 질문 연습 내 논리를 더 단단하게 만들어요" [ref=e227] [cursor=pointer]:
+                - img [ref=e229]
+                - generic [ref=e231]:
+                  - generic [ref=e232]: 반대쪽 질문 연습
+                  - text: 내 논리를 더 단단하게 만들어요
+            - paragraph [ref=e233]: 헌법 조항 안내는 수업 토론을 위한 학습 자료입니다. 실제 사건의 법률 판단이나 법률 자문을 대신하지 않습니다.
+          - region "모두의 참여 흐름" [ref=e234]:
+            - heading "모두의 참여 흐름" [level=2] [ref=e235]
+            - paragraph [ref=e236]: 4명 중 3명 시작 · 교사 도움 요청 0명
+            - generic [ref=e237]:
+              - article [ref=e238]:
+                - img "개띠 토론 아바타" [ref=e240]
+                - generic [ref=e252]:
+                  - generic [ref=e253]: 학생1
+                  - generic [ref=e254]: 발표 0/3 · 참여 1/3
+                  - generic [ref=e256]: 공개 토론 발언
+                  - group [ref=e257]:
+                    - generic "상호작용 기록 1개 보기" [ref=e258] [cursor=pointer]
+              - article [ref=e259]:
+                - img "개띠 토론 아바타" [ref=e261]
+                - generic [ref=e273]:
+                  - generic [ref=e274]: 학생2
+                  - generic [ref=e275]: 발표 0/3 · 참여 1/3
+                  - generic [ref=e277]: 공개 토론 발언
+                  - group [ref=e278]:
+                    - generic "상호작용 기록 1개 보기" [ref=e279] [cursor=pointer]
+              - article [ref=e280]:
+                - img "개띠 토론 아바타" [ref=e282]
+                - generic [ref=e294]:
+                  - generic [ref=e295]: 학생3
+                  - generic [ref=e296]: 발표 0/3 · 참여 1/3
+                  - generic [ref=e298]: 공개 토론 발언
+                  - group [ref=e299]:
+                    - generic "상호작용 기록 1개 보기" [ref=e300] [cursor=pointer]
+              - article [ref=e301]:
+                - img "개띠 토론 아바타" [ref=e303]
+                - generic [ref=e315]:
+                  - generic [ref=e316]: 학생
+                  - generic [ref=e317]: 발표 0/3 · 참여 0/3
+                  - generic [ref=e319]: 출발을 기다리는 중
+                  - group [ref=e320]:
+                    - generic "상호작용 기록 0개 보기" [ref=e321] [cursor=pointer]
+          - group [ref=e322]:
+            - generic "처음 사용하는 학생이라면" [ref=e323] [cursor=pointer]
+      - region "학급 성장 현황" [ref=e324]:
+        - generic [ref=e325]:
+          - generic [ref=e326]:
+            - heading "우리 반 토론 레이스" [level=2] [ref=e327]
+            - paragraph [ref=e328]: 친구들의 아바타가 발표와 참여를 타고 완주선을 향해 달려요.
+          - generic [ref=e329]:
+            - button "교사 지원 보기" [ref=e330] [cursor=pointer]
+            - generic [ref=e331]: 실시간 집계 중
+        - generic [ref=e332]:
+          - generic [ref=e333]:
+            - generic [ref=e334]: 참여 학생
+            - strong [ref=e335]: "4"
+          - generic [ref=e336]:
+            - generic [ref=e337]: 전체 발표
+            - strong [ref=e338]: "0"
+          - generic [ref=e339]:
+            - generic [ref=e340]: 토론 참여
+            - strong [ref=e341]: "3"
+        - generic [ref=e342]:
+          - article [ref=e343]:
+            - img "개띠 토론 아바타" [ref=e345]
+            - generic [ref=e357]:
+              - generic [ref=e358]:
+                - generic [ref=e359]: 학생1
+                - generic [ref=e360]: "LV 0 · #1"
+              - generic [ref=e361]: 토론 아바타 · 시작 단계
+              - generic [ref=e362]: 발표 0회 · 참여 1회
+              - generic [ref=e363]:
+                - img "개띠 토론 아바타" [ref=e366]
+                - generic [ref=e378]: FINISH
+              - generic [ref=e379]: 레이스 13% · 발표 0/3 · 참여 1/3
+          - article [ref=e380]:
+            - img "개띠 토론 아바타" [ref=e382]
+            - generic [ref=e394]:
+              - generic [ref=e395]:
+                - generic [ref=e396]: 학생2
+                - generic [ref=e397]: "LV 0 · #2"
+              - generic [ref=e398]: 토론 아바타 · 시작 단계
+              - generic [ref=e399]: 발표 0회 · 참여 1회
+              - generic [ref=e400]:
+                - img "개띠 토론 아바타" [ref=e403]
+                - generic [ref=e415]: FINISH
+              - generic [ref=e416]: 레이스 13% · 발표 0/3 · 참여 1/3
+          - article [ref=e417]:
+            - img "개띠 토론 아바타" [ref=e419]
+            - generic [ref=e431]:
+              - generic [ref=e432]:
+                - generic [ref=e433]: 학생3
+                - generic [ref=e434]: "LV 0 · #3"
+              - generic [ref=e435]: 토론 아바타 · 시작 단계
+              - generic [ref=e436]: 발표 0회 · 참여 1회
+              - generic [ref=e437]:
+                - img "개띠 토론 아바타" [ref=e440]
+                - generic [ref=e452]: FINISH
+              - generic [ref=e453]: 레이스 13% · 발표 0/3 · 참여 1/3
+          - article [ref=e454]:
+            - img "개띠 토론 아바타" [ref=e456]
+            - generic [ref=e468]:
+              - generic [ref=e469]:
+                - generic [ref=e470]: 학생
+                - generic [ref=e471]: "LV 0 · #4"
+              - generic [ref=e472]: 토론 아바타 · 시작 단계
+              - generic [ref=e473]: 발표 0회 · 참여 0회
+              - generic [ref=e474]:
+                - img "개띠 토론 아바타" [ref=e476]
+                - generic [ref=e488]: FINISH
+              - generic [ref=e489]: 출발선을 기다리고 있어요. 첫 생각부터 시작해요.
+              - generic [ref=e490]:
+                - button "AI 코치에게 다음 한 걸음 묻기" [ref=e491] [cursor=pointer]
+                - button "교사 도움 요청" [ref=e492] [cursor=pointer]
+        - generic [ref=e493]: 완주 목표는 발표 3회와 코치 질문·토론 발언 3회예요. 같은 별명은 한 아바타로 합산됩니다. 집계는 서버 재시작 시 초기화돼요.
+      - region "학급 공개 토론" [ref=e494]:
+        - generic [ref=e495]:
+          - generic [ref=e496]:
+            - heading "우리 반 공개 토론" [level=2] [ref=e497]
+            - paragraph [ref=e498]: 같은 토론실 학생들의 주장을 읽고, 답글로 생각을 주고받아요.
+          - generic [ref=e499]: 실시간 토론
+        - generic [ref=e501]:
+          - article [ref=e502]:
+            - img "개띠 토론 아바타" [ref=e504]
+            - generic [ref=e516]:
+              - generic [ref=e517]:
+                - generic [ref=e518]: 찬성팀
+                - generic [ref=e519]: 학생1
+                - generic [ref=e520]: 오전 04:19
+              - generic [ref=e521]: 독도는 한국땅
+              - button "이 발언에 답글" [ref=e522] [cursor=pointer]
+          - article [ref=e523]:
+            - img "개띠 토론 아바타" [ref=e525]
+            - generic [ref=e537]:
+              - generic [ref=e538]:
+                - generic [ref=e539]: 반대팀
+                - generic [ref=e540]: 학생2
+                - generic [ref=e541]: 오전 04:19
+              - generic [ref=e542]: 독도는 분쟁지역
+              - button "이 발언에 답글" [ref=e543] [cursor=pointer]
+          - article [ref=e544]:
+            - img "개띠 토론 아바타" [ref=e546]
+            - generic [ref=e558]:
+              - generic [ref=e559]:
+                - generic [ref=e560]: 찬성팀
+                - generic [ref=e561]: 학생3
+                - generic [ref=e562]: 오전 04:19
+              - generic [ref=e563]: "학생2의 발언: 독도는 분쟁지역"
+              - generic [ref=e564]: 그건 아닌지
+              - button "이 발언에 답글" [ref=e565] [cursor=pointer]
+        - generic [ref=e566]:
+          - generic [ref=e567]:
+            - combobox "토론 역할" [ref=e568]:
+              - option "찬성팀" [selected]
+              - option "반대팀"
+              - option "배심원"
+            - textbox "익명 이름" [ref=e569]: 학생
+            - textbox "학급 토론 발언" [ref=e570]:
+              - /placeholder: 주장, 근거, 질문을 남겨보세요
+            - button "발언 등록" [ref=e571] [cursor=pointer]
+          - generic [ref=e572]: 실명 대신 별명을 사용하세요. 발언은 같은 수업 페이지 접속자에게 공개되며, 서버가 꺼지면 삭제됩니다.
+      - region "제한 시간 헌법 비행 게임" [ref=e573]:
+        - generic [ref=e574]:
+          - generic [ref=e575]:
+            - generic [ref=e576]: CONSTITUTION FLIGHT · 45 SEC
+            - heading "헌법 조항 비행대" [level=2] [ref=e577]
+            - paragraph [ref=e578]: 비행기를 조항 게이트로 날려 제한 시간 안에 점수를 모아요.
+          - generic [ref=e579]:
+            - generic [ref=e580]: 점수 0 · 최고 0
+            - generic [ref=e581]: 45초
+            - generic [ref=e582]: 연속 0
+        - generic [ref=e583]:
+          - generic [ref=e584]:
+            - generic [ref=e585]:
+              - strong [ref=e586]: 조항을 맞히고 목적지까지!
+              - paragraph [ref=e587]: 45초 동안 생활 속 상황에 맞는 조항을 골라보세요. 정답을 맞힐수록 비행기가 앞으로 나아가요. 마우스·터치 또는 방향키와 Enter로 조종할 수 있어요.
+            - button "이륙하기" [ref=e588] [cursor=pointer]
+          - paragraph [ref=e589]: 한 문제 정답마다 1점, 연속 정답은 최고 기록에 남아요. 게임을 마치면 학급 레이스 참여에도 기록됩니다.
+      - region "헌법 조항 블록 쌓기 게임" [ref=e590]:
+        - generic [ref=e591]:
+          - generic [ref=e592]:
+            - generic [ref=e593]: RIGHTS BLOCKS · TETRIS MODE
+            - heading "헌법 조항 블록 쌓기" [level=2] [ref=e594]
+            - paragraph [ref=e595]: 블록을 쌓아 줄을 지우고, 블록에 담긴 헌법 조항을 익혀요.
+          - generic [ref=e596]:
+            - generic [ref=e597]: 점수 0
+            - generic [ref=e598]: 줄 0 / 6
+            - generic [ref=e599]: 90초
+        - generic [ref=e601]:
+          - generic [ref=e602]:
+            - generic [ref=e603]:
+              - generic "헌법 조항 테트리스 게임 보드" [ref=e604]
+              - generic [ref=e605]:
+                - strong [ref=e606]: 조항 블록을 쌓아보세요!
+                - paragraph [ref=e607]: 90초 안에 가로줄 6개를 지우면 완주예요. 블록마다 헌법 조항이 적혀 있어요.
+                - button "게임 시작" [ref=e608] [cursor=pointer]
+            - generic "터치 조작" [ref=e609]:
+              - button "회전" [ref=e610] [cursor=pointer]
+              - button "왼쪽" [ref=e611] [cursor=pointer]: ←
+              - button "아래로" [ref=e612] [cursor=pointer]: ↓
+              - button "오른쪽" [ref=e613] [cursor=pointer]: →
+              - button "빠르게 내리기" [ref=e614] [cursor=pointer]
+          - complementary [ref=e615]:
+            - generic [ref=e616]:
+              - generic [ref=e617]: 현재 블록의 헌법 조항
+              - strong [ref=e618]: 게임을 시작하면 조항이 나타나요.
+              - paragraph [ref=e619]: 블록을 쌓고 줄을 지우며 조항을 익혀보세요.
+            - generic [ref=e620]: 한 줄을 지우면 그 줄의 조항을 알려드려요.
+            - button "이 조항을 토론 주제에 연결해 묻기" [disabled] [ref=e621]
+            - generic [ref=e622]: "키보드: ← → 이동 · ↑ 회전 · ↓ 빠르게 내리기 · Space 즉시 내리기"
+  - status
