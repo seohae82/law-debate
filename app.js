@@ -3,6 +3,138 @@ const stages = {
   middle: { caption: '상대의 반론을 듣고 내 근거를 한 단계 더 다듬어요.', welcome: '토론이 한창이군요. 상대의 말에서 설득력 있었던 점 하나와 궁금한 점 하나를 찾아보세요. 질문을 적어주시면 공식 자료와 함께 살펴볼게요.', suggestions: ['상대 주장을 반박하고 싶어요', '내 주장을 헌법 조항과 연결해줘요', '새로운 해결책을 제안하고 싶어요'] },
   end: { caption: '가장 중요한 근거와 배운 점을 또렷하게 마무리해요.', welcome: '마무리 단계에서는 내 주장을 다시 한 문장으로 말하고, 상대 의견을 들으며 새롭게 생각한 점도 덧붙여 보세요.', suggestions: ['마무리 발언을 정리해줘요', '토론에서 배운 점을 정리하고 싶어요', '내 주장의 빈틈을 확인해줘요'] }
 };
+const constitutionCardsData = [
+  [1, '민주공화국과 국민주권', '대한민국의 국가 형태와 모든 권력이 국민에게서 나온다는 원칙을 정합니다.'],
+  [2, '국민의 자격과 국가의 보호', '국민이 되는 요건은 법률로 정하고, 국가는 재외국민을 보호할 의무를 집니다.'],
+  [3, '대한민국의 영토', '대한민국의 영토 범위를 한반도와 그 부속도서로 정합니다.'],
+  [4, '평화적 통일의 지향', '자유민주적 기본질서에 입각한 평화적 통일 정책을 수립하고 추진하도록 합니다.'],
+  [5, '국제평화와 국군의 사명', '침략전쟁을 부인하고 국군의 국가안전보장·국토방위 사명과 정치적 중립을 정합니다.'],
+  [6, '조약·국제법과 외국인의 지위', '헌법에 따라 체결된 조약의 국내 효력과 국제법에 따른 외국인의 지위를 다룹니다.'],
+  [7, '공무원의 책임과 중립', '공무원은 국민 전체를 위해 봉사하며, 정치적 중립이 보장되어야 합니다.'],
+  [8, '정당의 자유와 민주성', '정당 설립과 복수정당제를 보장하고, 정당의 민주적 활동 원칙을 정합니다.'],
+  [9, '전통문화와 민족문화', '국가가 전통문화를 계승·발전시키고 민족문화를 창달하도록 노력하게 합니다.'],
+  [10, '인간의 존엄과 행복추구권', '모든 사람의 존엄과 행복추구권을 확인하고 국가의 기본권 보장 의무를 정합니다.'],
+  [11, '법 앞의 평등', '성별·종교·사회적 신분 등을 이유로 한 차별을 금지하고 평등 원칙을 세웁니다.'],
+  [12, '신체의 자유와 적법절차', '체포·구속·수색, 고문 금지, 변호인의 조력 등 신체의 자유를 보호합니다.'],
+  [13, '형벌의 소급 금지와 이중처벌 금지', '행위 당시 법률에 따른 처벌, 같은 범죄의 거듭 처벌 금지 등을 정합니다.'],
+  [14, '거주·이전의 자유', '국민이 거주하거나 이동할 장소를 정할 자유를 보장합니다.'],
+  [15, '직업선택의 자유', '국민이 자신의 직업을 선택할 자유를 보장합니다.'],
+  [16, '주거의 자유', '주거의 평온과 자유를 보호하고 압수·수색에 영장을 요구합니다.'],
+  [17, '사생활의 비밀과 자유', '개인의 사적인 생활이 부당하게 침해되지 않도록 보호합니다.'],
+  [18, '통신의 비밀', '우편·통신 등 사적인 의사소통의 비밀을 보호합니다.'],
+  [19, '양심의 자유', '개인이 자신의 양심에 따라 생각하고 판단할 자유를 보장합니다.'],
+  [20, '종교의 자유와 정교분리', '종교의 자유를 보장하고 국교를 인정하지 않으며 종교와 정치를 분리합니다.'],
+  [21, '언론·출판·집회·결사의 자유', '의견 표현과 집회·결사의 자유를 보장하고 허가·검열을 금지합니다.'],
+  [22, '학문·예술의 자유와 창작자 권리', '학문과 예술의 자유, 저작자·발명가 등의 권리를 보호합니다.'],
+  [23, '재산권과 공공필요에 따른 보상', '재산권을 보장하되 공공복리와 법률에 따른 제한·정당한 보상을 정합니다.'],
+  [24, '선거권', '국민이 법률이 정하는 바에 따라 선거에 참여할 권리를 보장합니다.'],
+  [25, '공무담임권', '국민이 법률이 정하는 바에 따라 공직에 취임할 권리를 보장합니다.'],
+  [26, '청원권', '국가기관에 문서로 청원할 권리와 국가의 심사 의무를 정합니다.'],
+  [27, '재판청구권과 형사절차 권리', '법률에 따른 재판, 신속·공개 재판, 무죄추정 등 사법 절차의 권리를 보장합니다.'],
+  [28, '구금에 대한 형사보상', '구금 뒤 불기소나 무죄가 된 경우 법률에 따라 정당한 보상을 청구할 수 있습니다.'],
+  [29, '공무원의 불법행위에 대한 배상', '공무원의 직무상 불법행위로 손해를 입은 경우 국가 등에 배상을 청구할 수 있습니다.'],
+  [30, '범죄피해자 구조', '범죄로 생명·신체 피해를 입은 국민이 법률에 따라 국가 구조를 받을 수 있습니다.'],
+  [31, '교육을 받을 권리와 의무교육', '균등한 교육 기회, 의무교육 무상 원칙, 교육의 자주성·중립성을 정합니다.'],
+  [32, '근로의 권리와 근로조건', '근로권·최저임금·인간다운 근로조건과 여성·연소자 보호를 다룹니다.'],
+  [33, '근로자의 단결·교섭·행동권', '근로조건 향상을 위한 노동자의 단결권·단체교섭권·단체행동권을 보장합니다.'],
+  [34, '인간다운 생활과 사회보장', '사회보장·복지, 여성·노인·청소년·장애인 보호와 재해 예방을 다룹니다.'],
+  [35, '환경권과 쾌적한 주거', '건강하고 쾌적한 환경에서 살 권리와 국가의 환경·주거 정책 의무를 정합니다.'],
+  [36, '혼인·가족생활과 보건', '개인의 존엄과 양성평등에 기초한 가족생활, 모성 보호와 보건 보호를 정합니다.'],
+  [37, '기본권 보장과 제한의 한계', '열거되지 않은 권리도 존중하고, 제한은 필요한 경우에 한하며 본질을 침해하지 못하게 합니다.'],
+  [38, '납세의 의무', '국민은 법률이 정하는 바에 따라 세금을 납부할 의무를 집니다.'],
+  [39, '국방의 의무와 불이익 금지', '국방의 의무와 병역 이행을 이유로 한 불이익 처우 금지를 정합니다.'],
+  [40, '국회의 입법권', '법률을 만드는 권한이 국회에 있음을 정합니다.'],
+  [41, '국회의 구성과 선거', '국회의원 선출의 기본 원칙과 국회의원 수·선거제도를 법률로 정하도록 합니다.'],
+  [42, '국회의원의 임기', '국회의원의 임기를 4년으로 정합니다.'],
+  [43, '국회의원의 겸직 제한', '국회의원이 겸할 수 없는 직을 법률로 정하도록 합니다.'],
+  [44, '회기 중 체포 특례', '현행범이 아닌 국회의원의 회기 중 체포·구금에는 국회 동의를 요구합니다.'],
+  [45, '국회 발언·표결의 면책', '국회에서 직무상 한 발언과 표결에 대해 국회 밖에서 책임을 지지 않도록 합니다.'],
+  [46, '국회의원의 청렴과 직무 의무', '청렴 의무, 국가이익 우선, 양심에 따른 직무와 지위 남용 금지를 정합니다.'],
+  [47, '국회의 회기', '정기회·임시회의 소집과 회기 기간을 정합니다.'],
+  [48, '국회의장단 선출', '국회가 의장 1명과 부의장 2명을 선출하도록 합니다.'],
+  [49, '국회의 의결 원칙', '별도 규정이 없을 때 의결에 필요한 출석·찬성 기준을 정합니다.'],
+  [50, '국회 회의의 공개', '국회 회의를 공개하는 원칙과 예외를 정합니다.'],
+  [51, '의안의 회기 계속 원칙', '회기 중 처리되지 않은 의안은 원칙적으로 다음 회기에도 이어집니다.'],
+  [52, '법률안 제출권', '국회의원과 정부가 법률안을 제출할 수 있도록 합니다.'],
+  [53, '법률안 공포와 재의요구', '대통령의 법률안 공포·재의요구와 국회의 재의결 절차를 정합니다.'],
+  [54, '예산안 심의·확정', '국회의 예산안 심의와 회계연도에 따른 예산 편성·의결 시한을 정합니다.'],
+  [55, '계속비와 예비비', '여러 해 지출할 계속비와 예비비의 국회 의결·승인 절차를 정합니다.'],
+  [56, '추가경정예산안', '정부가 예산 변경이 필요할 때 추가경정예산안을 제출할 수 있도록 합니다.'],
+  [57, '예산 증액의 제한', '국회가 정부 동의 없이 지출예산을 늘리거나 새 항목을 만들지 못하게 합니다.'],
+  [58, '국채와 국가부담 계약', '국채 모집이나 예산 외 국가 부담 계약에 국회 의결을 요구합니다.'],
+  [59, '조세법률주의', '세금의 종류와 세율은 법률로 정하도록 합니다.'],
+  [60, '조약·전쟁 등에 대한 국회 동의', '중요 조약, 선전포고, 국군 파견 등에 대한 국회의 동의권을 정합니다.'],
+  [61, '국정감사와 국정조사', '국회가 국정을 감사·조사하고 자료·증언을 요구할 수 있도록 합니다.'],
+  [62, '국무위원의 국회 출석', '국무총리·국무위원 등이 국회에 출석해 보고·답변하는 절차를 정합니다.'],
+  [63, '국무총리·국무위원 해임건의', '국회가 정해진 절차와 의결 기준에 따라 해임을 건의할 수 있습니다.'],
+  [64, '국회의 자율과 의원 징계', '국회 내부 규칙과 의원 자격심사·징계·제명 절차를 정합니다.'],
+  [65, '탄핵소추', '고위 공직자가 헌법·법률을 위반한 경우 국회의 탄핵소추 절차를 정합니다.'],
+  [66, '대통령의 지위와 책무', '대통령의 국가 대표 역할, 헌법 수호와 평화통일 책무를 정합니다.'],
+  [67, '대통령 선거', '대통령 선출의 보통·평등·직접·비밀선거 원칙과 당선 기준을 정합니다.'],
+  [68, '대통령 선거 시기', '임기 만료나 궐위 때 후임자를 선거하는 시한을 정합니다.'],
+  [69, '대통령 취임 선서', '대통령이 취임할 때 하는 헌법 준수와 국민 복리 증진의 선서를 정합니다.'],
+  [70, '대통령 임기', '대통령 임기는 5년이며 중임할 수 없도록 합니다.'],
+  [71, '대통령 권한대행', '대통령이 궐위·사고일 때 권한을 대행할 순서를 정합니다.'],
+  [72, '국민투표 부의', '대통령이 국가안위 관련 중요정책을 국민투표에 부칠 수 있도록 합니다.'],
+  [73, '대통령의 외교 권한', '조약, 외교사절, 선전포고와 강화에 관한 대통령의 권한을 정합니다.'],
+  [74, '국군 통수권', '대통령의 국군 통수와 국군 조직·편성의 법률 근거를 정합니다.'],
+  [75, '대통령령', '법률이 위임한 사항과 법률 집행에 필요한 대통령령을 정할 수 있습니다.'],
+  [76, '긴급명령과 긴급재정경제처분', '국가 위기에서 필요한 최소한의 긴급조치와 국회 승인 절차를 정합니다.'],
+  [77, '계엄 선포와 해제', '비상계엄·경비계엄의 요건, 조치와 국회의 해제 요구를 정합니다.'],
+  [78, '공무원 임면', '대통령이 헌법과 법률에 따라 공무원을 임명·면직하도록 합니다.'],
+  [79, '사면·감형·복권', '대통령의 사면 권한과 일반사면에 필요한 국회 동의를 정합니다.'],
+  [80, '훈장과 영전', '훈장과 그 밖의 영전을 법률에 따라 수여하도록 합니다.'],
+  [81, '대통령의 국회 의견 표명', '대통령이 국회에서 발언하거나 서한으로 의견을 전할 수 있습니다.'],
+  [82, '대통령 국법행위의 문서화', '대통령의 국법상 행위는 문서로 하고 관계 국무위원 등이 부서하도록 합니다.'],
+  [83, '대통령의 겸직 제한', '대통령이 다른 공·사직을 겸할 수 없도록 합니다.'],
+  [84, '대통령의 형사상 불소추 특례', '재직 중 내란·외환죄 외에는 형사상 소추를 받지 않는 특례를 정합니다.'],
+  [85, '전직 대통령 예우', '전직 대통령의 신분과 예우를 법률로 정하도록 합니다.'],
+  [86, '국무총리의 임명과 역할', '국회 동의를 거친 국무총리 임명과 행정각부 통할 역할을 정합니다.'],
+  [87, '국무위원의 구성과 임무', '국무위원의 임명, 국정 보좌와 국무회의 참여를 정합니다.'],
+  [88, '국무회의의 구성과 심의', '정부의 중요한 정책을 심의하는 국무회의의 구성과 의장을 정합니다.'],
+  [89, '국무회의 심의 사항', '예산·조약·법률안·긴급조치 등 국무회의 심의를 거칠 사항을 열거합니다.'],
+  [90, '국가원로자문회의', '대통령의 국정 관련 자문을 위한 국가원로자문회의를 둘 수 있도록 합니다.'],
+  [91, '국가안전보장회의', '국가안보 관련 정책을 국무회의 심의 전에 자문하는 회의를 둡니다.'],
+  [92, '민주평화통일자문회의', '평화통일정책 수립에 관해 대통령에게 자문하는 회의를 둘 수 있습니다.'],
+  [93, '국민경제자문회의', '국민경제 발전의 중요 정책에 관해 대통령에게 자문하는 회의를 둘 수 있습니다.'],
+  [94, '행정각부의 장 임명', '행정각부의 장을 국무위원 중에서 임명하는 절차를 정합니다.'],
+  [95, '총리령·부령', '국무총리와 행정각부의 장이 소관 사무에 관한 명령을 발할 수 있습니다.'],
+  [96, '행정각부의 설치', '행정각부의 조직과 직무 범위를 법률로 정하도록 합니다.'],
+  [97, '감사원 설치와 기능', '국가 결산·회계 검사와 행정기관·공무원 감찰을 위한 감사원을 둡니다.'],
+  [98, '감사원 구성과 임기', '감사원장·감사위원의 구성, 임명과 임기를 정합니다.'],
+  [99, '국가 결산 검사', '감사원이 매년 세입·세출 결산을 검사하고 결과를 보고하도록 합니다.'],
+  [100, '감사원의 조직과 직무', '감사원의 세부 조직·직무와 감사위원 자격 등을 법률로 정합니다.'],
+  [101, '사법권과 법원의 조직', '사법권을 법원에 두고 대법원과 각급법원으로 조직합니다.'],
+  [102, '대법원과 법관', '대법원의 부·대법관과 법원 조직의 법률 근거를 정합니다.'],
+  [103, '법관의 독립', '법관이 헌법과 법률, 양심에 따라 독립해 재판하도록 합니다.'],
+  [104, '법관 임명 절차', '대법원장·대법관 등 법관 임명에 필요한 동의·제청 절차를 정합니다.'],
+  [105, '법관의 임기와 정년', '대법원장·대법관·일반 법관의 임기와 정년을 정합니다.'],
+  [106, '법관의 신분 보장', '법관을 법률이 정한 사유와 절차 없이 파면·불이익 처분하지 못하게 합니다.'],
+  [107, '위헌법률심판과 행정심판', '재판 중인 법률의 위헌 여부와 명령·규칙·처분의 심사 절차를 정합니다.'],
+  [108, '대법원의 규칙 제정권', '대법원이 소송 절차와 법원 내부 규칙을 정할 수 있도록 합니다.'],
+  [109, '재판의 공개', '재판 심리와 판결은 공개하는 원칙과 비공개 예외를 정합니다.'],
+  [110, '군사법원', '군사재판을 위한 군사법원의 설치와 재판 기준을 정합니다.'],
+  [111, '헌법재판소의 관장 사항', '위헌법률·탄핵·정당해산·권한쟁의·헌법소원을 심판합니다.'],
+  [112, '헌법재판관의 임기와 독립', '헌법재판관의 임기와 정치 관여 금지, 신분 보장을 정합니다.'],
+  [113, '헌법재판의 의결 기준', '중요한 헌법재판 결정에 필요한 재판관 찬성 수와 규칙 제정권을 정합니다.'],
+  [114, '선거관리위원회', '선거·국민투표를 공정하게 관리하는 독립된 위원회를 둡니다.'],
+  [115, '선거관리 지시 권한', '선거관리위원회가 선거·국민투표 사무에 필요한 지시를 할 수 있습니다.'],
+  [116, '선거운동의 공정성', '선거운동의 공정한 관리, 균등한 기회와 선거 비용 원칙을 정합니다.'],
+  [117, '지방자치단체의 사무', '지방자치단체가 주민 복리 사무·재산 관리와 자치 규정을 맡도록 합니다.'],
+  [118, '지방의회와 지방자치 조직', '지방의회를 두고 지방자치단체 조직과 운영을 법률로 정합니다.'],
+  [119, '경제질서와 경제민주화', '경제상의 자유와 창의를 존중하며 균형 성장·분배와 경제민주화를 추구합니다.'],
+  [120, '자원과 국토의 균형 개발', '주요 자원의 이용 허가와 국토·자원의 보호·균형 개발을 정합니다.'],
+  [121, '농지 소유와 이용 원칙', '농지의 경자유전 원칙과 소작제 금지, 제한적인 임대차를 다룹니다.'],
+  [122, '국토의 이용·개발·보전', '국토의 효율적이고 균형 있는 이용·개발·보전을 위한 제한을 둘 수 있습니다.'],
+  [123, '농어촌·지역·중소기업 지원', '농어촌과 지역경제, 중소기업을 보호·육성하고 농수산물 유통을 지원합니다.'],
+  [124, '소비자 보호', '국가가 건전한 소비와 제품 품질을 위한 소비자보호운동을 보장합니다.'],
+  [125, '대외무역의 육성', '국가가 대외무역을 육성하고 필요한 경우 규제·조정할 수 있습니다.'],
+  [126, '사기업 경영의 자율성', '긴급한 국방·국민경제 필요 외에는 사기업의 국유화·통제를 제한합니다.'],
+  [127, '과학기술과 국가표준', '과학기술·정보·인력 개발과 국가표준제도 확립을 위한 국가의 노력을 정합니다.'],
+  [128, '헌법개정안의 제안', '대통령 또는 국회 재적의원 과반수가 헌법개정안을 제안할 수 있습니다.'],
+  [129, '헌법개정안의 공고', '제안된 헌법개정안을 대통령이 20일 이상 공고하도록 합니다.'],
+  [130, '헌법개정안의 의결과 국민투표', '국회 의결과 국민투표를 거쳐 헌법개정이 확정되는 절차를 정합니다.']
+];
 const defaultClassTopic = { title: '학교의 휴대전화 일괄 수거는 정당한가?', scenario: '학교의 수업 집중과 생활지도를 위한 휴대전화 보관이 학생의 사생활·표현의 자유와 어떻게 균형을 이루어야 하는지 토론합니다.' };
 let classTopic = { ...defaultClassTopic };
 let classTopicLoaded = false;
@@ -10,6 +142,7 @@ const createDefaultState = () => ({ presentations: [], participations: 0, creati
 let legacyState = {};
 let profiles = {};
 let activeStudent = localStorage.getItem('courtroom-active-student') || '학생';
+let profileReady = localStorage.getItem('courtroom-profile-ready') === 'true' || activeStudent !== '학생';
 try { legacyState = JSON.parse(localStorage.getItem('courtroom-state') || '{}'); } catch {}
 try { profiles = JSON.parse(localStorage.getItem('courtroom-profiles') || '{}'); } catch {}
 let state = { ...createDefaultState(), ...(profiles[activeStudent] || (activeStudent === '학생' ? legacyState : {})) };
@@ -158,7 +291,7 @@ function renderProgress() {
     title.textContent = label;
     const meta = document.createElement('span');
     meta.className = 'row-meta';
-    meta.textContent = checked ? '완료 · 다시 눌러 해제' : '기록 전';
+    meta.textContent = checked ? '완료 · 해제하면 뒤 기록도 취소' : '기록 전';
     row.append(check, title, meta);
     list.append(row);
   });
@@ -167,8 +300,8 @@ function renderProgress() {
   document.querySelector('#rubricLogic').classList.toggle('met', state.logical);
   document.querySelector('#celebrate').classList.toggle('show', milestoneCount >= 3 && state.creative && state.logical);
   const recordButton = document.querySelector('#recordBtn');
-  recordButton.textContent = count >= 3 ? '발표 3회를 모두 기록했어요' : '+ 발표 기록하기';
-  recordButton.disabled = count >= 3;
+  recordButton.textContent = count >= 3 ? '3회 모두 완료 · 마지막 발표 해제' : '+ 발표 기록하기';
+  recordButton.disabled = false;
   renderCharacter();
 }
 
@@ -230,7 +363,9 @@ function renderCharacter(animate = false) {
 }
 
 function switchStudent(name) {
-  const next = String(name || '').trim().slice(0, 12) || '학생';
+  const next = String(name || '').trim().slice(0, 10) || '학생';
+  profileReady = true;
+  localStorage.setItem('courtroom-profile-ready', 'true');
   persist();
   if (next === activeStudent) { document.querySelector('#profileName').value = next; return; }
   activeStudent = next;
@@ -434,7 +569,8 @@ async function updateClassSupport(name, persona, action) {
 
 async function pollClassBoard() {
   try {
-    const query = new URLSearchParams({ name: activeStudent, persona: state.persona || 'owl' });
+    const query = new URLSearchParams({ persona: state.persona || 'owl' });
+    if (profileReady) query.set('name', activeStudent);
     const response = await fetch(`/api/class/board?${query}`, { cache: 'no-store' });
     if (!response.ok) throw new Error('board_unavailable');
     const board = await response.json();
@@ -543,9 +679,15 @@ async function checkStatus() {
   }
 }
 
-async function sendChat(value) {
+async function sendChat(value, options = {}) {
   const text = String(value || input.value).trim();
   if (!text) return;
+  if (!profileReady) {
+    renderMessage({ who: 'bot', text: '참여 기록을 나누어 저장할 수 있도록 위의 ‘학생 참여 프로필’에서 10자 이내 별명을 먼저 정해주세요.' });
+    input.value = '';
+    document.querySelector('#profileName').focus();
+    return;
+  }
   if (isLowEffortInput(text)) {
     renderMessage({ who: 'bot', text: '잠깐, 너무 짧거나 반복된 글이라 토론 생각으로 기록하지 않았어요. “저는 ___라고 생각해요. 왜냐하면 ___ 때문이에요.”처럼 오늘의 헌법 쟁점에 연결해 한 문장으로 다시 말해볼까요?' });
     input.value = '';
@@ -561,7 +703,7 @@ async function sendChat(value) {
     const response = await fetch('/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: text, history, stage: state.stage, position: document.querySelector('#roomSide').value, name: activeStudent, persona: state.persona, topic: classTopic })
+      body: JSON.stringify({ message: text, history, stage: state.stage, position: document.querySelector('#roomSide').value, name: activeStudent, persona: state.persona, topic: classTopic, articleCard: options.articleCard || null })
     });
     const result = await response.json();
     if (!response.ok) throw new Error(result.error || '자료 검색에 실패했습니다. 잠시 뒤 다시 시도해 주세요.');
@@ -606,11 +748,12 @@ function toast(text) {
 
 function nextPresentationSlot() {
   const member = classMembers.find(item => item.name === activeStudent);
-  const complete = new Set([
-    ...state.presentations.map(item => item.slot),
-    ...(member?.presentationSlots || [])
-  ]);
+  const complete = completedPresentationSlots(member);
   return [0, 1, 2].find(slot => !complete.has(slot));
+}
+
+function completedPresentationSlots(member = classMembers.find(item => item.name === activeStudent)) {
+  return new Set([...state.presentations.map(item => item.slot), ...(member?.presentationSlots || [])]);
 }
 
 function openPresentationModal(slot = nextPresentationSlot()) {
@@ -618,31 +761,41 @@ function openPresentationModal(slot = nextPresentationSlot()) {
   presentationSlot = slot;
   document.querySelector('#presentationTitle').textContent = `${slot + 1}번째 발표 기록`;
   document.querySelector('#presentationText').value = '';
+  document.querySelector('#presentationError').textContent = '';
   document.querySelector('#presentationModal').classList.add('open');
   document.querySelector('#presentationText').focus();
 }
 
 async function togglePresentation(slot) {
   const member = classMembers.find(item => item.name === activeStudent);
-  const localRecord = state.presentations.find(item => item.slot === slot);
-  const checked = Boolean(localRecord) || Boolean(member?.presentationSlots?.includes(slot));
-  if (!checked) { openPresentationModal(slot); return; }
-  state.presentations = state.presentations.filter(item => item.slot !== slot);
-  if (localRecord) state.thoughtHistory = state.thoughtHistory.filter(event => event.presentationId !== localRecord.id);
+  const completed = completedPresentationSlots(member);
+  if (!completed.has(slot)) {
+    const next = nextPresentationSlot();
+    if (slot !== next) { toast(`먼저 ${next + 1}번째 발표를 기록해 주세요.`); return; }
+    openPresentationModal(slot);
+    return;
+  }
+  const slotsToUndo = [...completed].filter(item => item >= slot).sort((a, b) => b - a);
+  const removedRecords = state.presentations.filter(item => slotsToUndo.includes(item.slot));
+  state.presentations = state.presentations.filter(item => !slotsToUndo.includes(item.slot));
+  const removedIds = new Set(removedRecords.map(item => item.id));
+  state.thoughtHistory = state.thoughtHistory.filter(event => !removedIds.has(event.presentationId));
   persist();
   renderProgress();
   renderCharacter(true);
   try {
-    const response = await fetch('/api/class/activity', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ type: 'presentation', action: 'uncheck', slot, name: activeStudent, persona: state.persona })
-    });
-    if (!response.ok) throw new Error('class_board_unavailable');
+    for (const item of slotsToUndo) {
+      const response = await fetch('/api/class/activity', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: 'presentation', action: 'uncheck', slot: item, name: activeStudent, persona: state.persona })
+      });
+      if (!response.ok) throw new Error('class_board_unavailable');
+    }
     await pollClassBoard();
     renderProgress();
     renderCharacter(true);
-    toast(`${slot + 1}번째 발표 체크를 해제했어요. 다시 눌러 기록할 수 있습니다.`);
+    toast(`${slotsToUndo.length}개의 뒤 발표 체크를 순서대로 해제했어요. 다시 기록할 수 있습니다.`);
   } catch {
     toast('내 체크는 해제했지만 학급 집계와 연결하지 못했어요. 다시 확인해 주세요.');
   }
@@ -650,7 +803,14 @@ async function togglePresentation(slot) {
 
 async function savePresentation() {
   const text = document.querySelector('#presentationText').value.trim();
-  if (!text || presentationSlot === null) { toast('발표에서 말한 핵심 생각을 한 문장으로 적어주세요.'); return; }
+  const length = Array.from(text).length;
+  const error = document.querySelector('#presentationError');
+  if (length <= 10 || presentationSlot === null) {
+    error.textContent = length <= 10 ? `발표 내용을 11자 이상 적어주세요. (현재 ${length}자)` : '발표 순서를 다시 확인해 주세요.';
+    document.querySelector('#presentationText').focus();
+    return;
+  }
+  error.textContent = '';
   const slot = presentationSlot;
   const at = Date.now();
   const id = `p-${at}-${slot}`;
@@ -688,6 +848,89 @@ function thoughtTypeLabel(event) {
   if (event.type === 'public-debate') return `학급 토론 · ${event.side || '발언'}`;
   return '생각 기록';
 }
+
+function constitutionChapter(number) {
+  if (number <= 9) return { id: 1, name: '제1장 총강' };
+  if (number <= 39) return { id: 2, name: '제2장 국민의 권리와 의무' };
+  if (number <= 65) return { id: 3, name: '제3장 국회' };
+  if (number <= 100) return { id: 4, name: '제4장 정부' };
+  if (number <= 110) return { id: 5, name: '제5장 법원' };
+  if (number <= 113) return { id: 6, name: '제6장 헌법재판소' };
+  if (number <= 116) return { id: 7, name: '제7장 선거관리' };
+  if (number <= 118) return { id: 8, name: '제8장 지방자치' };
+  if (number <= 127) return { id: 9, name: '제9장 경제' };
+  return { id: 10, name: '제10장 헌법개정' };
+}
+
+function renderConstitutionCards() {
+  const query = document.querySelector('#articleSearch').value.trim().toLowerCase();
+  const chapterFilter = document.querySelector('#articleChapterFilter').value;
+  const articles = constitutionCardsData.filter(([number, title, summary]) => {
+    const chapter = constitutionChapter(number);
+    return (chapterFilter === 'all' || Number(chapterFilter) === chapter.id)
+      && (!query || `${number}조 ${title} ${summary} ${chapter.name}`.toLowerCase().includes(query));
+  });
+  document.querySelector('#articleCount').textContent = `${articles.length}개 조항`;
+  const grid = document.querySelector('#articleGrid');
+  grid.innerHTML = '';
+  if (!articles.length) {
+    const empty = document.createElement('div');
+    empty.className = 'article-empty';
+    empty.textContent = '검색 결과가 없어요. 조항 번호나 권리 이름으로 다시 찾아보세요.';
+    grid.append(empty);
+    return;
+  }
+  articles.forEach(([number, title, summary]) => {
+    const chapter = constitutionChapter(number);
+    const card = document.createElement('article');
+    card.className = 'article-card';
+    const head = document.createElement('div');
+    head.className = 'article-card-head';
+    const badge = document.createElement('span');
+    badge.className = 'article-number';
+    badge.textContent = `제${number}조`;
+    const heading = document.createElement('div');
+    const chapterLabel = document.createElement('div');
+    chapterLabel.className = 'article-chapter';
+    chapterLabel.textContent = chapter.name;
+    const titleElement = document.createElement('h3');
+    titleElement.textContent = title;
+    heading.append(chapterLabel, titleElement);
+    head.append(badge, heading);
+    const description = document.createElement('p');
+    description.className = 'article-summary';
+    description.textContent = summary;
+    const actions = document.createElement('div');
+    actions.className = 'article-card-actions';
+    const ask = document.createElement('button');
+    ask.type = 'button';
+    ask.className = 'article-help';
+    ask.textContent = '오늘 주제로 도움받기';
+    ask.addEventListener('click', () => {
+      closeConstitutionCards();
+      document.querySelectorAll('[data-nav]').forEach(nav => nav.classList.toggle('active', nav.dataset.nav === 'debate'));
+      sendChat(`오늘 수업 주제 “${classTopic.title}”에서 헌법 제${number}조(${title})를 어떻게 연결해 토론할 수 있을까요? 이 조항의 학습 요약은 “${summary}”입니다. 공식 자료를 확인하고, 찬성·반대 양쪽에서 생각할 질문을 주세요.`, { articleCard: { number, title, summary } });
+      document.querySelector('.chat-panel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+    const source = document.createElement('a');
+    source.className = 'article-source';
+    source.href = 'https://www.law.go.kr/법령/대한민국헌법';
+    source.target = '_blank';
+    source.rel = 'noopener noreferrer';
+    source.textContent = '원문 ↗';
+    actions.append(ask, source);
+    card.append(head, description, actions);
+    grid.append(card);
+  });
+}
+
+function openConstitutionCards() {
+  document.querySelector('#articleSearch').value = '';
+  document.querySelector('#articleChapterFilter').value = 'all';
+  renderConstitutionCards();
+  document.querySelector('#constitutionModal').classList.add('open');
+}
+function closeConstitutionCards() { document.querySelector('#constitutionModal').classList.remove('open'); }
 
 function renderThoughtNote() {
   const events = [...(state.thoughtHistory || [])];
@@ -850,7 +1093,12 @@ document.querySelectorAll('.stage').forEach(button => button.addEventListener('c
   renderChat();
   scheduleNudge();
 }));
-document.querySelector('#recordBtn').addEventListener('click', () => openPresentationModal());
+document.querySelector('#recordBtn').addEventListener('click', () => {
+  if (!profileReady) { toast('먼저 별명을 설정해 주세요.'); document.querySelector('#profileName').focus(); return; }
+  const slots = [...completedPresentationSlots()].sort((a, b) => a - b);
+  if (slots.length >= 3) togglePresentation(slots.at(-1));
+  else openPresentationModal(nextPresentationSlot());
+});
 function closePresentation() {
   presentationSlot = null;
   document.querySelector('#presentationModal').classList.remove('open');
@@ -859,7 +1107,20 @@ document.querySelector('#closePresentation').addEventListener('click', closePres
 document.querySelector('#cancelPresentation').addEventListener('click', closePresentation);
 document.querySelector('#presentationModal').addEventListener('click', event => { if (event.target.id === 'presentationModal') closePresentation(); });
 document.querySelector('#savePresentation').addEventListener('click', savePresentation);
-document.querySelector('#profileName').addEventListener('change', event => switchStudent(event.target.value));
+document.querySelector('#applyProfile').addEventListener('click', () => {
+  const name = document.querySelector('#profileName').value.trim();
+  if (!name) { toast('참여할 별명을 입력해 주세요.'); document.querySelector('#profileName').focus(); return; }
+  const persona = document.querySelector('#personaSelect').value;
+  switchStudent(name);
+  profileReady = true;
+  localStorage.setItem('courtroom-profile-ready', 'true');
+  state.persona = persona;
+  persist();
+  renderProgress();
+  renderCharacter(true);
+  pollClassBoard();
+  toast(`${activeStudent} 아바타로 참여를 시작해요.`);
+});
 document.querySelector('#saveTopicButton').addEventListener('click', saveClassTopic);
 document.querySelector('#personaSelect').addEventListener('change', event => {
   state.persona = event.target.value;
@@ -883,10 +1144,7 @@ document.querySelectorAll('[data-nav]').forEach(button => button.addEventListene
     openThoughtNote();
   }
   if (button.dataset.nav === 'rights') {
-    renderMessage({ who: 'bot', text: '헌법 원문은 국가법령정보센터에서 확인하세요. 생활 속 쟁점의 쉬운 설명은 찾기쉬운 생활법령정보에서 찾아볼 수 있어요.', sources: [
-      { title: '대한민국헌법 · 국가법령정보센터', url: 'https://www.law.go.kr/법령/대한민국헌법' },
-      { title: '아동·청소년/교육 분야 생활법령', url: 'https://www.easylaw.go.kr/CSP/CsmSortRetrieveLst.laf?sortType=cate&csmAstSeq=2' }
-    ] });
+    openConstitutionCards();
   }
   if (button.dataset.nav === 'debate') {
     state.messages = [];
@@ -904,11 +1162,16 @@ document.querySelector('#saveNote').addEventListener('click', () => {
   toast('생각 노트를 저장했어요.');
 });
 document.querySelector('#noteModal').addEventListener('click', event => { if (event.target.id === 'noteModal') closeNote(); });
+document.querySelector('#closeConstitution').addEventListener('click', closeConstitutionCards);
+document.querySelector('#constitutionModal').addEventListener('click', event => { if (event.target.id === 'constitutionModal') closeConstitutionCards(); });
+document.querySelector('#articleSearch').addEventListener('input', renderConstitutionCards);
+document.querySelector('#articleChapterFilter').addEventListener('change', renderConstitutionCards);
 document.querySelector('#roomForm').addEventListener('submit', async event => {
   event.preventDefault();
   const field = document.querySelector('#roomInput');
   const text = field.value.trim();
   if (!text) return;
+  if (!profileReady) { toast('발언 전에 먼저 별명을 설정해 주세요.'); document.querySelector('#profileName').focus(); return; }
   const button = document.querySelector('.room-send');
   button.disabled = true;
   try {
@@ -986,6 +1249,7 @@ function updateFlightProgress() {
   document.querySelector('#gamePlane').style.setProperty('--flight-altitude', `${34 + (gameScore % 4) * 10}%`);
 }
 function startConstitutionGame() {
+  if (!profileReady) { toast('비행 점수를 학급에 기록하려면 먼저 별명을 설정해 주세요.'); document.querySelector('#profileName').focus(); return; }
   clearInterval(gameTimerId);
   clearTimeout(gameTransitionId);
   gameDeck = shuffled(gameQuestionBank);

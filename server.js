@@ -216,7 +216,7 @@ function getClassBoard() {
   };
 }
 
-async function generateFeedback({ message, history, stage, position, topic }) {
+async function generateFeedback({ message, history, stage, position, topic, articleCard }) {
   const sources = await retrieveSources(message);
   const key = process.env.UPSTAGE_API_KEY;
   if (!key) {
@@ -242,6 +242,7 @@ async function generateFeedback({ message, history, stage, position, topic }) {
     stage,
     position,
     latestStudentStatement: message,
+    selectedConstitutionCard: articleCard,
     recentPeerDebate: roomPosts.filter(post => post.topicUpdatedAt === topic.updatedAt).slice(-8).map(post => ({ side: post.side, body: post.body })),
     conversation: history.slice(-12),
     officialSources: sources.map(({ title, url, excerpt }) => ({ title, url, excerpt: excerpt.slice(0, 1200) }))
@@ -253,7 +254,7 @@ async function generateFeedback({ message, history, stage, position, topic }) {
     body: JSON.stringify({
       model: 'solar-mini4',
       messages: [
-        { role: 'system', content: `당신은 대한민국 헌법 모의법정 수업의 토론 코치입니다. 이번 수업의 유일한 토론 주제는 “${topic.title}”입니다. 상황 설명: ${topic.scenario} 최신 학생 발언만 보고 주제와 관련 있는지 판단하세요. 이전 대화가 주제와 관련 있어도 최신 발언이 전혀 다른 잡담·낙서·반복이면 onTopic=false로 하고, 혼내지 말고 현재 주제로 돌아오는 문장 틀과 질문을 제안하세요. 관련 발언이면 onTopic=true로 표시하세요. 학생의 입장을 대신 정하지 말고 구체적인 칭찬과 보완점, 다음 질문을 한국어 존댓말로 답하세요. 창의성과 논리성은 실제 발언에 근거해 평가하고 빈 칭찬은 하지 마세요. 제공된 officialSources만 근거로 인용하며 조항·사실·판례를 만들지 마세요. 헌법 원문과 쉬운 생활법령 설명을 구별하고 법적 결론을 단정하지 마세요. 학생들이 서로 반론과 질문을 주고받도록 도와주세요. 개인정보나 실명 공개를 부추기지 마세요.` },
+        { role: 'system', content: `당신은 대한민국 헌법 모의법정 수업의 토론 코치입니다. 이번 수업의 유일한 토론 주제는 “${topic.title}”입니다. 상황 설명: ${topic.scenario} 최신 학생 발언만 보고 주제와 관련 있는지 판단하세요. 이전 대화가 주제와 관련 있어도 최신 발언이 전혀 다른 잡담·낙서·반복이면 onTopic=false로 하고, 혼내지 말고 현재 주제로 돌아오는 문장 틀과 질문을 제안하세요. 관련 발언이면 onTopic=true로 표시하세요. selectedConstitutionCard는 조항을 찾도록 돕는 짧은 학습용 요약이지 정확한 원문 인용이 아닙니다. officialSources에 원문 근거가 없으면 요약을 법 조문처럼 인용하지 말고 국가법령정보센터 원문에서 확인하도록 안내하세요. 학생의 입장을 대신 정하지 말고 구체적인 칭찬과 보완점, 다음 질문을 한국어 존댓말로 답하세요. 창의성과 논리성은 실제 발언에 근거해 평가하고 빈 칭찬은 하지 마세요. 제공된 officialSources만 근거로 인용하며 조항·사실·판례를 만들지 마세요. 헌법 원문과 쉬운 생활법령 설명을 구별하고 법적 결론을 단정하지 마세요. 학생들이 서로 반론과 질문을 주고받도록 도와주세요. 개인정보나 실명 공개를 부추기지 마세요.` },
         ...history.map(item => ({ role: item.role === 'model' ? 'assistant' : 'user', content: item.text })),
         { role: 'user', content: JSON.stringify(context) }
       ],
@@ -384,7 +385,10 @@ async function handleApi(request, response, url) {
       const message = String(body.message || '').trim().slice(0, 3000);
       if (!message) return json(response, 400, { error: 'empty_message' });
       const history = Array.isArray(body.history) ? body.history.filter(item => ['user', 'model'].includes(item.role)).slice(-12).map(item => ({ role: item.role, text: String(item.text || '').slice(0, 2000) })) : [];
-      const result = await generateFeedback({ message, history, stage: String(body.stage || 'start').slice(0, 12), position: String(body.position || '').slice(0, 24), topic: classTopic });
+      const card = body.articleCard && Number.isInteger(Number(body.articleCard.number)) && Number(body.articleCard.number) >= 1 && Number(body.articleCard.number) <= 130
+        ? { number: Number(body.articleCard.number), title: String(body.articleCard.title || '').slice(0, 100), summary: String(body.articleCard.summary || '').slice(0, 300) }
+        : null;
+      const result = await generateFeedback({ message, history, stage: String(body.stage || 'start').slice(0, 12), position: String(body.position || '').slice(0, 24), topic: classTopic, articleCard: card });
       if (result.onTopic) recordClassActivity(body.name, body.persona, 'participation', { source: 'coach' });
       return json(response, 200, result);
     } catch (error) {
